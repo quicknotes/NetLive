@@ -1,0 +1,13 @@
+# incremental data. DO NOT EDIT.
+# format is <lastModified> <length> <SHA-1> <path>
+# Encoding is UTF-8
+1383662967300 16213 7694c9b27b036c62ea6b4c33a1ce6e5e31139726 C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\MainService.java
+1383485708308 18521 a2a1f2c8a715ae8eb0e01e538bb2706563aa96a9 C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\WidgetService.java
+1378470690000 414 b0f49c394513222c0d86c470739c6273102dbe29 C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\MyApplication.java
+1378470690000 5787 3448e3ec4c00405c43c878dd84a11bfa4e1f8244 C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\SettingsFragment.java
+1383436259126 2812 ea509541f3783adfe9460767199284532674dcd2 C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\NetworkSpeedWidget.java
+1378470690000 740 0be88d7b95a053ceb29ff4573be2375de50430d5 C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\MyBroadcastReceiver.java
+1378470690000 9574 41b148c4083416bc557b7e49303f1a04c3afa1f7 C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\AppWidgetConfigurePreferencesFragment.java
+1383429751984 1073 6a203eb801437fe4155f39c023e8430ad12306ef C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\AppWidgetConfigure.java
+1383437835969 6149 55eec70986a3c17b281d837c1206223da9bb082e C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\MainActivity.java
+1383424929624 2647 1e31968939d36045b7b98a05de2753b2fc4742c1 C:\Users\Richard\Documents\NetLive from Original Git\src\com\richardlucasapps\netlive\AppDataUsage.java

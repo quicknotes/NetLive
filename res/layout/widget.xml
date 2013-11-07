@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/widgetTextViewLineOne"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/widgetTextViewLineTwo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/widgetTextViewLineOne"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/widgetTextViewLineThree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/widgetTextViewLineTwo"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/widgetTextViewLineFour"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/widgetTextViewLineThree"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/widgetTextViewLineFive"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/widgetTextViewLineFour"
+        android:text="TextView" />
+
+</RelativeLayout>
