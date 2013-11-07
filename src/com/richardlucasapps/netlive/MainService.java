@@ -2,6 +2,11 @@ package com.richardlucasapps.netlive;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -20,6 +25,9 @@ import android.content.pm.PackageManager;
 import android.os.PowerManager;
 
 public class MainService extends Service {
+
+    private final ScheduledExecutorService scheduler =
+            Executors.newScheduledThreadPool(1);
 
 	private Long bytesSentAndReceivedSinceBoot;
 	private Long bytesSentSinceBoot;
@@ -51,7 +59,7 @@ public class MainService extends Service {
 
 
 
-    Handler mHandler;
+    //Handler mHandler;
 
 	int mId;
 
@@ -86,7 +94,7 @@ public class MainService extends Service {
     	if(syncConnPrefDisbale){
     		return;
    	}
-    	mHandler = new Handler();
+    	//mHandler = new Handler();
 	        previousBytesSentAndReceivedSinceBoot = 0L;
 	        previousBytesSentSinceBoot = 0L;
 	        previousBytesReceivedSinceBoot = 0L;
@@ -114,25 +122,26 @@ public class MainService extends Service {
 	                notification);
 	        
 	        startForeground(mId, notification);
-	        start();
+	        //start();
+            beepForAnHour();
 	        super.onCreate();
 	}
 
-	@Override
-	public void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-	}
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		return super.onStartCommand(intent, flags, startId);
-	}
+    public void beepForAnHour() {
+        final Runnable beeper = new Runnable() {
+            public void run() { update(); }
+        };
+        final ScheduledFuture beeperHandle =
+                scheduler.scheduleAtFixedRate(beeper, 1, 1, TimeUnit.SECONDS);
 
-	@Override
-	public IBinder onBind(Intent arg0) {
-		return null;
-	}
+    }
+
+
 	
 	private void update(){
 		
@@ -171,29 +180,7 @@ public class MainService extends Service {
     	String displayValuesText = "";
         displayValuesText += " Up: " + sentString;
         displayValuesText += " Down: " +  receivedString;
-    	
-//    	if(true){
-//    		if(displayNames){
-//    			displayValuesText = "Total: " + totalString;
-//    		}else{
-//    			displayValuesText = totalString + " ";
-//    		}
-//    	}
 
-//    	if(true){
-//    		if(true){
-//    			displayValuesText += " Up: " + sentString;
-//    		}else{
-//    			displayValuesText += sentString + " ";
-//    		}
-//    	}
-//    	if(true){
-//    		if(true){
-//    			displayValuesText += " Down: " +  receivedString;
-//    		}else{
-//    			displayValuesText += receivedString;
-//    		}
-//    	}
     	
     	String contentTitleText = "";
 /*TODO so many times throughout my code, I constantly check to see the settings of things, e.g. I am constantly checking here if showActiveApp is enabled.
@@ -300,69 +287,7 @@ private void convertBytesPerSecondValuesToUnitMeasurement() {
         ultimateUnitOfMeasure = "GBps";
         return;
 	}
-//	if (unitMeasurement.equals("Auto (bps, Kbps, Mbps, Gbps)")){
-//		if(bytesSentAndReceivedPerSecond <= 124.0){
-//			  	total = convertBpsTobps(bytesSentAndReceivedPerSecond);
-//		        sent = convertBpsTobps(bytesSentPerSecond);
-//		        received = convertBpsTobps(bytesReceivedPerSecond);
-//		        ultimateUnitOfMeasure = "bps";
-//		        return;
-//		}
-//		if(bytesSentAndReceivedPerSecond <= 999.0 ){
-//			total = convertBpsToKbps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToKbps(bytesSentPerSecond);
-//	        received = convertBpsToKbps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "kbps";
-//	        return;
-//		}
-//		if(bytesSentAndReceivedPerSecond <= 124875000){
-//			total = convertBpsToMbps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToMbps(bytesSentPerSecond);
-//	        received = convertBpsToMbps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "Mbps";
-//	        return;
-//		}
-//		else{
-//			total = convertBpsToGbps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToGbps(bytesSentPerSecond);
-//	        received = convertBpsToGbps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "Gbps";
-//	        return;
-//		}
-//
-//	}
-//
-//	if (unitMeasurement.equals("Auto (Bps, KBps, MBps, GBps)")){
-//		if(bytesSentAndReceivedPerSecond <= 999.0){
-//			total = convertBpsToBps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToBps(bytesSentPerSecond);
-//	        received = convertBpsToBps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "Bps";
-//	        return;
-//		}
-//		if(bytesSentAndReceivedPerSecond <= 999000.0 ){
-//			total = convertBpsToKBps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToKBps(bytesSentPerSecond);
-//	        received = convertBpsToKBps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "kBps";
-//	        return;
-//		}
-//		if(bytesSentAndReceivedPerSecond <= 999000000.0){
-//			total = convertBpsToMBps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToMBps(bytesSentPerSecond);
-//	        received = convertBpsToMBps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "MBps";
-//	        return;
-//		}
-//		else{
-//			total = convertBpsToGBps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToGBps(bytesSentPerSecond);
-//	        received = convertBpsToGBps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "GBps";
-//	        return;
-//		}
-//
-//	}
+
 		
 		
 }
@@ -475,38 +400,6 @@ private double convertBpsToMBps(long bytesPerSecond){
 
 private double convertBpsToGBps(long bytesPerSecond){
 	return  bytesPerSecond / 1000000000.0;
-}
-
-
-private void start(){
-	
-	new Thread(new Runnable() {
-		@Override
-        public void run() {
-            while (true) {
-                try {
-                    Thread.sleep(1000);
-                    mHandler.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                        	//I can probably do a broadcast receiver here
-                        	boolean isScreenOn = pm.isScreenOn();
-                        	//Log.d("isScreenOn", String.valueOf(isScreenOn));
-                 
-                        	if(isScreenOn){
-                        	update();
-                        	}
-                        }
-                    });
-                } catch (Exception e) {
-                    // TODO: handle exception
-                }
-            }
-        }
-    }).start();
-
-	
 }
 
 
