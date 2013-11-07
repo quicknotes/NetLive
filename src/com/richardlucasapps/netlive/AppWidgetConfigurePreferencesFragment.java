@@ -37,9 +37,6 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 	ListPreference widgetFontStyle;
 	ListPreference widgetFontColor;
 	ListPreference widgetFontSize;
-
-    String thisisatesttoseeifgitisworking;
-	
 	
 	
 	@Override
