@@ -5,7 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.os.Bundle;
 
-//Instead of making this an activity, then replace it with a preference fragment, why not simply make this a preference fragment.
+//TODO Instead of making this an activity, then replace it with a preference fragment, why not simply make this a preference fragment.
 
 public class AppWidgetConfigure extends Activity {
 	

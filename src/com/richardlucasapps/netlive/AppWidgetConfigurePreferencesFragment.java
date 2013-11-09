@@ -60,10 +60,6 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 		widgetUnitOfMeasure.setOnPreferenceChangeListener(widgetUnitOfMeasureListener);
 		widgetUnitOfMeasure.setSummary(widgetUnitOfMeasure.getValue().toString());
 		
-//		widgetFontStyle = (ListPreference) findPreference("pref_key_widget_font_style");
-//		widgetFontStyle.setOnPreferenceChangeListener(widgetFontStyleListener);
-//		widgetFontStyle.setSummary(widgetFontStyle.getEntry().toString());
-		
 		widgetFontColor = (ListPreference) findPreference("pref_key_widget_font_color");
 		widgetFontColor.setOnPreferenceChangeListener(widgetFontColorListener);
 		widgetFontColor.setSummary(widgetFontColor.getEntry().toString());
@@ -103,18 +99,7 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 		
 	};
 	
-//	private OnPreferenceChangeListener widgetFontStyleListener = new OnPreferenceChangeListener(){
-//
-//		@Override
-//		public boolean onPreferenceChange(Preference preference, Object newValue) {
-//			((ListPreference) preference).setValue(newValue.toString());
-//			String fontStyleEntry = (String) ((ListPreference) preference).getEntry();
-//			preference.setSummary(fontStyleEntry);
-//			return false;
-//		}
-//		
-//		
-//	};
+
 	
 	private OnPreferenceChangeListener widgetFontColorListener = new OnPreferenceChangeListener(){
 

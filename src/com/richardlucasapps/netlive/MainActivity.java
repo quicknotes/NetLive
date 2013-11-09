@@ -20,7 +20,10 @@ import android.widget.TextView;
 import com.richardlucasapps.netlive.R;
 
 public class MainActivity extends Activity {
-    
+
+//TODO externalize the strings in this activity, show some class*
+    //*denotes pun
+
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

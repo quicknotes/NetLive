@@ -228,12 +228,7 @@ public class WidgetService extends Service
 				}
 				
 			}
-			
-//			if(displayDownloadValue && displayTransferRateLabels){
-//				widgetTextViewLineFourText += "Down: " + receivedString + " ";
-//			}else if(displayDownloadValue){
-//				widgetTextViewLineFourText += receivedString + " ";
-//			}
+
 			
 			breakMeDownloadValue:if(true){
 				String downloadValueLocal = receivedString;
@@ -366,69 +361,6 @@ private void convertBytesPerSecondValuesToUnitMeasurement(String unitMeasurement
         ultimateUnitOfMeasure = "GBps";
         return;
 	}
-//	if (unitMeasurement.equals("Auto (bps, Kbps, Mbps, Gbps)")){
-//		if(bytesSentAndReceivedPerSecond <= 124.0){
-//			  	total = convertBpsTobps(bytesSentAndReceivedPerSecond);
-//		        sent = convertBpsTobps(bytesSentPerSecond);
-//		        received = convertBpsTobps(bytesReceivedPerSecond);
-//		        ultimateUnitOfMeasure = "bps";
-//		        return;
-//		}
-//		if(bytesSentAndReceivedPerSecond <= 999.0 ){
-//			total = convertBpsToKbps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToKbps(bytesSentPerSecond);
-//	        received = convertBpsToKbps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "kbps";
-//	        return;
-//		}
-//		if(bytesSentAndReceivedPerSecond <= 124875000){
-//			total = convertBpsToMbps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToMbps(bytesSentPerSecond);
-//	        received = convertBpsToMbps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "Mbps";
-//	        return;
-//		}
-//		else{
-//			total = convertBpsToGbps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToGbps(bytesSentPerSecond);
-//	        received = convertBpsToGbps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "Gbps";
-//	        return;
-//		}
-//
-//	}
-//
-//	if (unitMeasurement.equals("Auto (Bps, KBps, MBps, GBps)")){
-//		if(bytesSentAndReceivedPerSecond <= 999.0){
-//			total = convertBpsToBps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToBps(bytesSentPerSecond);
-//	        received = convertBpsToBps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "Bps";
-//	        return;
-//		}
-//		if(bytesSentAndReceivedPerSecond <= 999000.0 ){
-//			total = convertBpsToKBps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToKBps(bytesSentPerSecond);
-//	        received = convertBpsToKBps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "kBps";
-//	        return;
-//		}
-//		if(bytesSentAndReceivedPerSecond <= 999000000.0){
-//			total = convertBpsToMBps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToMBps(bytesSentPerSecond);
-//	        received = convertBpsToMBps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "MBps";
-//	        return;
-//		}
-//		else{
-//			total = convertBpsToGBps(bytesSentAndReceivedPerSecond);
-//	        sent = convertBpsToGBps(bytesSentPerSecond);
-//	        received = convertBpsToGBps(bytesReceivedPerSecond);
-//	        ultimateUnitOfMeasure = "GBps";
-//	        return;
-//		}
-//
-//	}
 		
 	}
 

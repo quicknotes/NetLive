@@ -75,7 +75,7 @@ public class MainService extends Service {
 	public void onCreate() {
 		
 		
-		pm  = ((PowerManager) getSystemService(Context.POWER_SERVICE));
+		//pm  = ((PowerManager) getSystemService(Context.POWER_SERVICE));
 
 		sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		
@@ -227,7 +227,11 @@ public class MainService extends Service {
     }
 
 private void convertBytesPerSecondValuesToUnitMeasurement() {
-	
+
+    //TODO Get rid of all these if statements, use strategy pattern, so create a base class
+    //When the options are changed / when app first starts.
+    //This base class will hold the transfer rate and whether show active app is enabled.
+    //This will be especially helpful with the widget
 	SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 	String unitMeasurement = sharedPref.getString("pref_key_measurement_unit", null);
 	
