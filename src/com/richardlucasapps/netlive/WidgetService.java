@@ -61,7 +61,8 @@ public class WidgetService extends Service
     	sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
     	//startService(new Intent(this, MainService.class));
         super.onCreate();
-        
+
+        //test
         previousBytesSentAndReceivedSinceBoot = 0L;
         previousBytesSentSinceBoot = 0L;
         previousBytesReceivedSinceBoot = 0L;
