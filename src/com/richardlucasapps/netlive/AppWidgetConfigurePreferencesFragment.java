@@ -121,7 +121,7 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 		public boolean onPreferenceClick(Preference arg0) {
 			
 			String unitOfMeasure = sharedPref.getString("pref_key_widget_measurement_unit", "Auto (bps, Kbps, Mbps, Gbps)");
-			boolean displayUnitOfMeasure = sharedPref.getBoolean("pref_key_widget_display_unit_of_measure", true);
+			//boolean displayUnitOfMeasure = sharedPref.getBoolean("pref_key_widget_display_unit_of_measure", true);
 //			boolean displayTotalValue = sharedPref.getBoolean("pref_key_widget_displayed_values_total", true);
 //			boolean displayUploadValue = sharedPref.getBoolean("pref_key_widget_displayed_values_upload", true);
 //			boolean displayDownloadValue = sharedPref.getBoolean("pref_key_widget_displayed_values_download", true);
@@ -133,7 +133,7 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 			
 			
 			edit.putString("pref_key_widget_measurement_unit"+mAppWidgetId, unitOfMeasure);
-			edit.putBoolean("pref_key_widget_display_unit_of_measure"+mAppWidgetId, displayUnitOfMeasure);
+			//edit.putBoolean("pref_key_widget_display_unit_of_measure"+mAppWidgetId, displayUnitOfMeasure);
 			
 //			edit.putBoolean("pref_key_widget_displayed_values_total"+mAppWidgetId, displayTotalValue);
 //			edit.putBoolean("pref_key_widget_displayed_values_upload"+mAppWidgetId, displayUploadValue);

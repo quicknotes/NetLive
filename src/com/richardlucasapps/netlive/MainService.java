@@ -14,7 +14,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.TrafficStats;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -23,6 +22,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.PowerManager;
+import android.util.Log;
 
 public class MainService extends Service {
 
@@ -112,7 +112,10 @@ public class MainService extends Service {
 			.setSmallIcon(R.drawable.ic_launcher_small_icon) //R.drawable.ic_launcher
 		    .setContentTitle("")
 		    .setContentText("")
+            .setPriority(Notification.PRIORITY_MIN)
 	        .setOngoing(true);
+
+
 	        
 	        notification = mBuilder.build();
 	        
@@ -120,7 +123,8 @@ public class MainService extends Service {
 	        mNotifyMgr.notify(
 	                mId,
 	                notification);
-	        
+
+            //Just commented out this foreground line
 	        startForeground(mId, notification);
 	        //start();
             beepForAnHour();
@@ -144,8 +148,18 @@ public class MainService extends Service {
 
 	
 	private void update(){
-		
 
+
+//        boolean firstRunSinceUpdate = getSharedPreferences("delete_data", MODE_PRIVATE).getBoolean("firstRunSinceUpdate", true);
+//        if (firstRunSinceUpdate){
+//            Log.d("TAG123456", "made it here12");
+//            MyApplication.getInstance().clearApplicationData();//This will delete the data from the previous installation
+//            //getSharedPreferences("START_UP_PREFERENCE", MODE_PRIVATE).getBoolean("firstRunSinceUpdateV1ToV1Point1", false);
+//            getSharedPreferences("delete_data", MODE_PRIVATE)
+//                    .edit()
+//                    .putBoolean("firstRunSinceUpdate", false)
+//                    .commit();
+//        }
 
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -207,6 +221,9 @@ public class MainService extends Service {
         mBuilder.setContentText(displayValuesText);
         mBuilder.setContentTitle(contentTitleText);
         mBuilder.setSmallIcon(R.drawable.ic_launcher_small_icon);
+        mBuilder.setPriority(Notification.PRIORITY_MIN);//just added these two
+        mBuilder.setOngoing(true);//just added these two
+
         if(timeCount >= 60){
         	mBuilder.setWhen(System.currentTimeMillis());
         	timeCount = 0;

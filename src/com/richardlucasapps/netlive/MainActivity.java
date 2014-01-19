@@ -38,6 +38,8 @@ public class MainActivity extends Activity {
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		
 		boolean firstrun = getSharedPreferences("START_UP_PREFERENCE", MODE_PRIVATE).getBoolean("firstrun", true);
+
+
 		 if (firstrun){
 			 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			 builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -53,13 +55,16 @@ public class MainActivity extends Activity {
 			 
 			 AlertDialog newFragment = dialog;
 			 newFragment.show();
-			 
-			 getSharedPreferences("START_UP_PREFERENCE", MODE_PRIVATE)
+
+             //MyApplication.getInstance().clearApplicationData();//This will delete the data from the
+
+             getSharedPreferences("START_UP_PREFERENCE", MODE_PRIVATE)
 		        .edit()
 		        .putBoolean("firstrun", false)
 		        .commit();
 			    
 		 }
+
 	}
 
 	
@@ -105,7 +110,7 @@ public class MainActivity extends Activity {
 	private void showAboutDialog() {
 		 AlertDialog.Builder aboutBuilder = new AlertDialog.Builder(this);
 		 TextView myMsg = new TextView(this);
-		 SpannableString s = new SpannableString("NetLive v1.1 Beta\n\nrichardlucasapps.com");
+		 SpannableString s = new SpannableString("NetLive v1.1\n\nrichardlucasapps.com");
 		 Linkify.addLinks(s, Linkify.WEB_URLS);
 		 myMsg.setText(s);
 		 myMsg.setTextSize(15);

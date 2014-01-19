@@ -108,8 +108,10 @@ public class WidgetService extends Service
             //How can I make this so I don't have to check and recheck every damn time?
             bool = sharedPref.getBoolean("pref_key_widget_display_unit_of_measure"+awID, true);
        	    String unitOfMeasure = sharedPref.getString("pref_key_widget_measurement_unit"+awID, "Mbps");
-			boolean displayUnitOfMeasure = sharedPref.getBoolean("pref_key_widget_display_unit_of_measure"+awID, true);
-			boolean displayTransferRateLabels = sharedPref.getBoolean("pref_key_widget_transfer_rate_names"+awID, true);
+            boolean displayUnitOfMeasure = true;
+			//boolean displayUnitOfMeasure = sharedPref.getBoolean("pref_key_widget_display_unit_of_measure"+awID, true);
+            boolean displayTransferRateLabels = true;
+            //boolean displayTransferRateLabels = sharedPref.getBoolean("pref_key_widget_transfer_rate_names"+awID, true);
 			boolean displayActiveApp = sharedPref.getBoolean("pref_key_widget_active_app"+awID, true);
 			String colorOfFont = sharedPref.getString("pref_key_widget_font_color"+awID, "Black");
 			String sizeOfFont = sharedPref.getString("pref_key_widget_font_size"+awID, "12.0");
@@ -136,7 +138,7 @@ public class WidgetService extends Service
 		        
 		     sentString = String.format("%.3f", sent);
 		     receivedString = String.format("%.3f", received);
-		     totalString = String.format("%.3f", total);
+		     //totalString = String.format("%.3f", total);
 			
 			int widgetColor;
 			widgetColor = Color.parseColor(colorOfFont);
@@ -170,33 +172,33 @@ public class WidgetService extends Service
 			
 
 			
-			breakMeTotalValue:if(true){
-				String totalValueLocal = totalString;
-				if(displayTransferRateLabels){
-					totalValueLocal = "Total: " + totalString;
-				}
-				if(widgetTextViewLineOneText.equals("")){
-					widgetTextViewLineOneText = totalValueLocal;
-					break breakMeTotalValue;
-				}
-				if(widgetTextViewLineTwoText.equals("")){
-					widgetTextViewLineTwoText = totalValueLocal;
-					break breakMeTotalValue;
-				}
-				if(widgetTextViewLineThreeText.equals("")){
-					widgetTextViewLineThreeText = totalValueLocal;
-					break breakMeTotalValue;
-				}
-				if(widgetTextViewLineFourText.equals("")){
-					widgetTextViewLineFourText = totalValueLocal;
-					break breakMeTotalValue;
-				}
-				if(widgetTextViewLineFiveText.equals("")){
-					widgetTextViewLineFiveText = totalValueLocal;
-					break breakMeTotalValue;
-				}
-				
-			}
+//			breakMeTotalValue:if(true){
+//				String totalValueLocal = totalString;
+//				if(displayTransferRateLabels){
+//					totalValueLocal = "Total: " + totalString;
+//				}
+//				if(widgetTextViewLineOneText.equals("")){
+//					widgetTextViewLineOneText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//				if(widgetTextViewLineTwoText.equals("")){
+//					widgetTextViewLineTwoText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//				if(widgetTextViewLineThreeText.equals("")){
+//					widgetTextViewLineThreeText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//				if(widgetTextViewLineFourText.equals("")){
+//					widgetTextViewLineFourText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//				if(widgetTextViewLineFiveText.equals("")){
+//					widgetTextViewLineFiveText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//
+//			}
 			
 
 
@@ -274,13 +276,13 @@ public class WidgetService extends Service
        	 	v.setTextViewText(R.id.widgetTextViewLineTwo, widgetTextViewLineTwoText);
        	 	v.setTextViewText(R.id.widgetTextViewLineThree, widgetTextViewLineThreeText);
        	 	v.setTextViewText(R.id.widgetTextViewLineFour, widgetTextViewLineFourText);
-       	 	v.setTextViewText(R.id.widgetTextViewLineFive, widgetTextViewLineFiveText);
+       	 	//v.setTextViewText(R.id.widgetTextViewLineFive, widgetTextViewLineFiveText);
        	 	
        	 	v.setTextColor( R.id.widgetTextViewLineOne, widgetColor);
        	 	v.setTextColor( R.id.widgetTextViewLineTwo, widgetColor);
        	 	v.setTextColor( R.id.widgetTextViewLineThree, widgetColor);
        	 	v.setTextColor( R.id.widgetTextViewLineFour, widgetColor);
-       	 	v.setTextColor( R.id.widgetTextViewLineFive, widgetColor);
+       	 	//v.setTextColor( R.id.widgetTextViewLineFive, widgetColor);
        	 	
        	 	Float tempFloat= Float.parseFloat(sizeOfFont);
        	 	
@@ -288,7 +290,7 @@ public class WidgetService extends Service
        	 	v.setFloat(R.id.widgetTextViewLineTwo, "setTextSize", tempFloat);
        	 	v.setFloat(R.id.widgetTextViewLineThree, "setTextSize", tempFloat);
        		v.setFloat(R.id.widgetTextViewLineFour, "setTextSize", tempFloat);
-       		v.setFloat(R.id.widgetTextViewLineFive, "setTextSize", tempFloat);
+       		//v.setFloat(R.id.widgetTextViewLineFive, "setTextSize", tempFloat);
    	 		manager.updateAppWidget(awID, v);
    	 		widgetTextViewLineOneText = "";
 		    

@@ -24,17 +24,17 @@
         	android:entryValues="@array/pref_measurement_unit_values"
         	android:defaultValue="Mbps" />
         
-        <CheckBoxPreference
-            android:key="pref_key_widget_display_unit_of_measure"
-            android:summary="@string/pref_widget_display_unit_of_measure_summary"
-            android:title="@string/pref_widget_display_unit_of_measure_title"
-            android:defaultValue="true" />
+        <!--<CheckBoxPreference-->
+            <!--android:key="pref_key_widget_display_unit_of_measure"-->
+            <!--android:summary="@string/pref_widget_display_unit_of_measure_summary"-->
+            <!--android:title="@string/pref_widget_display_unit_of_measure_title"-->
+            <!--android:defaultValue="true" />-->
         	
-        	<CheckBoxPreference
-            android:key="pref_key_widget_transfer_rate_names"
-            android:summary="@string/pref_summary_transfer_rate_names"
-            android:title="@string/pref_title_transfer_rate_names"
-            android:defaultValue="true" />
+        	<!--<CheckBoxPreference-->
+            <!--android:key="pref_key_widget_transfer_rate_names"-->
+            <!--android:summary="@string/pref_summary_transfer_rate_names"-->
+            <!--android:title="@string/pref_title_transfer_rate_names"-->
+            <!--android:defaultValue="true" />-->
         	
         	<CheckBoxPreference
             android:key="pref_key_widget_active_app"

@@ -49,7 +49,7 @@
     <string name="pref_widget_category_general">General Widget Settings</string>
  
     <string name="pref_widget_display_unit_of_measure_title">Display Unit of Measure</string>
-    <string name="pref_widget_display_unit_of_measure_summary">Display unit of measure above transfer rates (recommended if using an auto setting)</string>
+    <string name="pref_widget_display_unit_of_measure_summary">Display unit of measure above transfer rates</string>
     
     <string name="pref_widget_category_font">Font</string>
     
