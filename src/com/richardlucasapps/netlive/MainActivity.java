@@ -1,6 +1,7 @@
 package com.richardlucasapps.netlive;
 
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.app.Activity;
@@ -11,6 +12,7 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,6 +23,10 @@ import com.richardlucasapps.netlive.R;
 
 public class MainActivity extends Activity {
 
+    MyApplication app;
+    SharedPreferences.Editor edit;
+
+    SharedPreferences sharedPref;
 //TODO externalize the strings in this activity, show some class*
     //*denotes pun
 
@@ -31,9 +37,15 @@ public class MainActivity extends Activity {
         .replace(android.R.id.content, new SettingsFragment())
         .commit();
 
+        app = new MyApplication();
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(app.getInstance());
+        boolean disabled = sharedPref.getBoolean("pref_key_auto_start", false);
+
+        if(!disabled){
         
         Intent intent = new Intent(this, MainService.class);
         startService(intent);
+        }
 
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		

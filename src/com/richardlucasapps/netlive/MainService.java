@@ -91,9 +91,10 @@ public class MainService extends Service {
 
         //This line below is janky as hell. I don't want to have to check this every time.  If it's not running, it's not running.
         //Leave it alone, no need to keep checking.
-    	if(syncConnPrefDisbale){
-    		return;
-   	}
+//    	if(syncConnPrefDisbale){
+//            Log.d("Sync Con Pref Disable", "looping out before it can run");
+//    		return;
+//   	    }
     	//mHandler = new Handler();
 	        previousBytesSentAndReceivedSinceBoot = 0L;
 	        previousBytesSentSinceBoot = 0L;
@@ -209,6 +210,7 @@ public class MainService extends Service {
     	if(syncConnPrefDisbale){
     		stopForeground(true);
     		mNotifyMgr.cancel(mId);
+            Log.d("Stopping from posting notification", "Main service line 213");
     		return;
     	}
     	
