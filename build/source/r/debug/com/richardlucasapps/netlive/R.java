@@ -17,10 +17,12 @@ public final class R {
  <item>Auto (Bps, KBps, MBps, GBps)</item> 
          */
         public static final int pref_measurement_unit_values=0x7f050001;
-        public static final int pref_widget_font_color_entries=0x7f050002;
-        public static final int pref_widget_font_color_values=0x7f050003;
-        public static final int pref_widget_font_size_entries=0x7f050004;
-        public static final int pref_widget_font_size_values=0x7f050005;
+        public static final int pref_poll_rate_entries=0x7f050002;
+        public static final int pref_poll_rate_values=0x7f050003;
+        public static final int pref_widget_font_color_entries=0x7f050004;
+        public static final int pref_widget_font_color_values=0x7f050005;
+        public static final int pref_widget_font_size_entries=0x7f050006;
+        public static final int pref_widget_font_size_values=0x7f050007;
     }
     public static final class attr {
     }
@@ -29,8 +31,12 @@ public final class R {
         public static final int activity_vertical_margin=0x7f060001;
     }
     public static final class drawable {
-        public static final int ic_launcher=0x7f020000;
-        public static final int ic_launcher_small_icon=0x7f020001;
+        public static final int both=0x7f020000;
+        public static final int download=0x7f020001;
+        public static final int ic_launcher=0x7f020002;
+        public static final int ic_launcher_small_icon=0x7f020003;
+        public static final int idle=0x7f020004;
+        public static final int upload=0x7f020005;
     }
     public static final class id {
         public static final int LinearLayout1=0x7f0a0000;
@@ -62,41 +68,44 @@ public final class R {
         public static final int notification_area_category=0x7f070006;
         public static final int notification_drawer_category=0x7f070007;
         public static final int pref_dialog_title_choose_measurement_unit=0x7f070008;
-        public static final int pref_measurement_unit_default_value=0x7f070009;
-        public static final int pref_measurement_unit_default_value_notification_area=0x7f07000a;
-        public static final int pref_measurement_unit_summary=0x7f07000b;
-        public static final int pref_screen_displayed_values_summary=0x7f07000c;
-        public static final int pref_summary_active_app=0x7f07000d;
-        public static final int pref_summary_auto_start=0x7f07000e;
-        public static final int pref_summary_display_in_notification_area=0x7f07000f;
-        public static final int pref_summary_show_measurement_unit_download=0x7f070010;
-        public static final int pref_summary_show_measurement_unit_total=0x7f070011;
-        public static final int pref_summary_show_measurement_unit_upload=0x7f070012;
-        public static final int pref_summary_show_mesurement_units=0x7f070013;
-        public static final int pref_summary_transfer_rate_names=0x7f070014;
-        public static final int pref_title_active_app=0x7f070015;
-        public static final int pref_title_auto_start=0x7f070016;
-        public static final int pref_title_display_in_notification_area=0x7f070017;
-        public static final int pref_title_measurement_unit=0x7f070018;
-        public static final int pref_title_show_measurement_unit_download=0x7f070019;
-        public static final int pref_title_show_measurement_unit_total=0x7f07001a;
-        public static final int pref_title_show_measurement_unit_upload=0x7f07001b;
-        public static final int pref_title_show_mesurement_units=0x7f07001c;
-        public static final int pref_title_transfer_rate_names=0x7f07001d;
-        public static final int pref_title_values_to_display=0x7f07001e;
-        public static final int pref_widget_category_font=0x7f07001f;
-        public static final int pref_widget_category_general=0x7f070020;
-        public static final int pref_widget_dialog_font_color=0x7f070021;
-        public static final int pref_widget_dialog_font_size=0x7f070022;
-        public static final int pref_widget_dialog_font_style=0x7f070023;
-        public static final int pref_widget_display_unit_of_measure_summary=0x7f070024;
-        public static final int pref_widget_display_unit_of_measure_title=0x7f070025;
-        public static final int pref_widget_summary_font_color=0x7f070026;
-        public static final int pref_widget_summary_font_size=0x7f070027;
-        public static final int pref_widget_summary_font_style=0x7f070028;
-        public static final int pref_widget_title_font_color=0x7f070029;
-        public static final int pref_widget_title_font_size=0x7f07002a;
-        public static final int pref_widget_title_font_style=0x7f07002b;
+        public static final int pref_dialog_title_poll_rate=0x7f070009;
+        public static final int pref_measurement_unit_default_value=0x7f07000a;
+        public static final int pref_measurement_unit_default_value_notification_area=0x7f07000b;
+        public static final int pref_measurement_unit_summary=0x7f07000c;
+        public static final int pref_screen_displayed_values_summary=0x7f07000d;
+        public static final int pref_summary_active_app=0x7f07000e;
+        public static final int pref_summary_auto_start=0x7f07000f;
+        public static final int pref_summary_display_in_notification_area=0x7f070010;
+        public static final int pref_summary_poll_rate=0x7f070011;
+        public static final int pref_summary_show_measurement_unit_download=0x7f070012;
+        public static final int pref_summary_show_measurement_unit_total=0x7f070013;
+        public static final int pref_summary_show_measurement_unit_upload=0x7f070014;
+        public static final int pref_summary_show_mesurement_units=0x7f070015;
+        public static final int pref_summary_transfer_rate_names=0x7f070016;
+        public static final int pref_title_active_app=0x7f070017;
+        public static final int pref_title_auto_start=0x7f070018;
+        public static final int pref_title_display_in_notification_area=0x7f070019;
+        public static final int pref_title_measurement_unit=0x7f07001a;
+        public static final int pref_title_poll_rate=0x7f07001b;
+        public static final int pref_title_show_measurement_unit_download=0x7f07001c;
+        public static final int pref_title_show_measurement_unit_total=0x7f07001d;
+        public static final int pref_title_show_measurement_unit_upload=0x7f07001e;
+        public static final int pref_title_show_mesurement_units=0x7f07001f;
+        public static final int pref_title_transfer_rate_names=0x7f070020;
+        public static final int pref_title_values_to_display=0x7f070021;
+        public static final int pref_widget_category_font=0x7f070022;
+        public static final int pref_widget_category_general=0x7f070023;
+        public static final int pref_widget_dialog_font_color=0x7f070024;
+        public static final int pref_widget_dialog_font_size=0x7f070025;
+        public static final int pref_widget_dialog_font_style=0x7f070026;
+        public static final int pref_widget_display_unit_of_measure_summary=0x7f070027;
+        public static final int pref_widget_display_unit_of_measure_title=0x7f070028;
+        public static final int pref_widget_summary_font_color=0x7f070029;
+        public static final int pref_widget_summary_font_size=0x7f07002a;
+        public static final int pref_widget_summary_font_style=0x7f07002b;
+        public static final int pref_widget_title_font_color=0x7f07002c;
+        public static final int pref_widget_title_font_size=0x7f07002d;
+        public static final int pref_widget_title_font_style=0x7f07002e;
     }
     public static final class style {
         /** 

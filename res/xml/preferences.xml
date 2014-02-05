@@ -12,7 +12,16 @@
         	android:entries="@array/pref_measurement_unit_entries"
         	android:entryValues="@array/pref_measurement_unit_values"
         	android:defaultValue="Mbps" />
-        	
+
+        <ListPreference
+            android:key="pref_key_poll_rate"
+            android:title="@string/pref_title_poll_rate"
+            android:summary="@string/pref_summary_poll_rate"
+            android:dialogTitle="@string/pref_dialog_title_poll_rate"
+            android:entries="@array/pref_poll_rate_entries"
+            android:entryValues="@array/pref_poll_rate_values"
+            android:defaultValue="1" />
+
         	<!--<CheckBoxPreference-->
             <!--android:key="pref_key_transfer_rate_names"-->
             <!--android:summary="@string/pref_summary_transfer_rate_names"-->

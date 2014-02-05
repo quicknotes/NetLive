@@ -1,6 +1,6 @@
 package com.richardlucasapps.netlive;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -70,6 +70,11 @@ public class MainService extends Service {
 	SharedPreferences sharedPref;
 	boolean syncConnPrefDisbale;
 
+   long originalPollRate;
+   ScheduledFuture beeperHandle;
+
+   //final ScheduledFuture beeperHandle = null;
+
 
 	@Override
 	public void onCreate() {
@@ -80,6 +85,10 @@ public class MainService extends Service {
 		sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		
     	syncConnPrefDisbale = sharedPref.getBoolean("pref_key_auto_start", false);
+
+        long pollRate = Long.parseLong(sharedPref.getString("pref_key_poll_rate", "1"));
+        Log.d("pollRate", String.valueOf(pollRate));
+        originalPollRate = pollRate;
     
     	getCurrentInstalledAppsCount = 10;
     
@@ -99,7 +108,7 @@ public class MainService extends Service {
 	        previousBytesSentAndReceivedSinceBoot = 0L;
 	        previousBytesSentSinceBoot = 0L;
 	        previousBytesReceivedSinceBoot = 0L;
-	        appDataUsageList = new LinkedList<AppDataUsage>();
+	        appDataUsageList = new ArrayList<AppDataUsage>();
 	        fastApp = "";
 	        appMonitorCounter = 0;
 	        timeCount = 0;
@@ -110,11 +119,22 @@ public class MainService extends Service {
 	                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	        mId = 1;
 	        mBuilder = new NotificationCompat.Builder(this)
-			.setSmallIcon(R.drawable.ic_launcher_small_icon) //R.drawable.ic_launcher
+			.setSmallIcon(R.drawable.idle) //R.drawable.ic_launcher
 		    .setContentTitle("")
 		    .setContentText("")
-            .setPriority(Notification.PRIORITY_MIN)
+            //.setPriority(Notification.PRIORITY_MIN)
 	        .setOngoing(true);
+
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
 
 
 	        
@@ -128,7 +148,7 @@ public class MainService extends Service {
             //Just commented out this foreground line
 	        startForeground(mId, notification);
 	        //start();
-            beepForAnHour();
+            beepForAnHour(pollRate);
 	        super.onCreate();
 	}
 
@@ -137,19 +157,19 @@ public class MainService extends Service {
         return null;
     }
 
-    public void beepForAnHour() {
+    public void beepForAnHour(long pollRate) {
         final Runnable beeper = new Runnable() {
             public void run() { update(); }
         };
-        final ScheduledFuture beeperHandle =
-                scheduler.scheduleAtFixedRate(beeper, 1, 1, TimeUnit.SECONDS);
+        beeperHandle =
+                scheduler.scheduleAtFixedRate(beeper, 1, pollRate, TimeUnit.SECONDS);
 
     }
 
 
 	
 	private void update(){
-
+    //TODO still need to divide the values by the poll rate to get an estimate
 
 //        boolean firstRunSinceUpdate = getSharedPreferences("delete_data", MODE_PRIVATE).getBoolean("firstRunSinceUpdate", true);
 //        if (firstRunSinceUpdate){
@@ -164,6 +184,11 @@ public class MainService extends Service {
 
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
+        if(originalPollRate!=Long.valueOf(sharedPref.getString("pref_key_poll_rate", "1"))){
+            beeperHandle.cancel(true);
+            onCreate();
+        }
+
         //TODO remove
 		//boolean displayNames = sharedPref.getBoolean("pref_key_transfer_rate_names", true);
 		
@@ -175,9 +200,9 @@ public class MainService extends Service {
 		setTotalSentReceiveBytesPerSecond();
         convertBytesPerSecondValuesToUnitMeasurement();
         
-        sentString = String.format("%.3f", sent);
-        receivedString = String.format("%.3f", received);
-        totalString = String.format("%.3f", total);
+        sentString = String.format("%.3f", sent/originalPollRate); //TODO this handles the different poll rate
+        receivedString = String.format("%.3f", received/originalPollRate);
+        totalString = String.format("%.3f", total/originalPollRate);
         
         
         previousBytesSentAndReceivedSinceBoot = bytesSentAndReceivedSinceBoot;
@@ -185,8 +210,12 @@ public class MainService extends Service {
         previousBytesReceivedSinceBoot = bytesReceivedSinceBoot;
         
         appMonitorCounter+=1;
-        if(showActiveApp && appMonitorCounter >=5){
-        	fastApp = getCurrentInstalledApps();
+        if(showActiveApp && appMonitorCounter >=10){//TODO change the 10 to something higher, maybe check every 60 seconds
+        	if(appDataUsageList.isEmpty()){
+                loadAllAppsIntoAppDataUsageList();
+                Log.d("loading all", "apps into list");
+            }
+            fastApp = getCurrentInstalledApps();
         	appMonitorCounter = 0;
         }
        
@@ -222,27 +251,53 @@ public class MainService extends Service {
     	
         mBuilder.setContentText(displayValuesText);
         mBuilder.setContentTitle(contentTitleText);
-        mBuilder.setSmallIcon(R.drawable.ic_launcher_small_icon);
-        mBuilder.setPriority(Notification.PRIORITY_MIN);//just added these two
-        mBuilder.setOngoing(true);//just added these two
 
-        if(timeCount >= 60){
+
+        //mBuilder.setPriority(Notification.PRIORITY_MIN);//just added these two
+        //mBuilder.setOngoing(true);//just added these two
+
+        if(timeCount >= 500){
         	mBuilder.setWhen(System.currentTimeMillis());
         	timeCount = 0;
         }
-        Intent resultIntent = new Intent(this, MainActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(MainActivity.class);
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                    0,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mBuilder.setContentIntent(resultPendingIntent);
-        
-        mNotifyMgr.notify(mId, mBuilder.build()); 
-    	
+//        Intent resultIntent = new Intent(this, MainActivity.class);
+//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+//        stackBuilder.addParentStack(MainActivity.class);
+//        stackBuilder.addNextIntent(resultIntent);
+//        PendingIntent resultPendingIntent =
+//                stackBuilder.getPendingIntent(
+//                    0,
+//                    PendingIntent.FLAG_UPDATE_CURRENT
+//                );
+//        mBuilder.setContentIntent(resultPendingIntent);
+        if(bytesSentPerSecond/originalPollRate>13107 && bytesReceivedPerSecond/originalPollRate>13107){//1307 bytes is equal to .1Mbit
+            mBuilder.setSmallIcon(R.drawable.both);
+            mNotifyMgr.notify(mId, mBuilder.build());
+            return;
+        }
+
+        if(!(bytesSentPerSecond/originalPollRate>13107) && bytesReceivedPerSecond/originalPollRate>13107){
+            mBuilder.setSmallIcon(R.drawable.download);
+            mNotifyMgr.notify(mId, mBuilder.build());
+            return;
+
+        }
+
+        if(bytesSentPerSecond/originalPollRate<13107 && bytesReceivedPerSecond/originalPollRate<13107){
+            mBuilder.setSmallIcon(R.drawable.idle);
+            mNotifyMgr.notify(mId, mBuilder.build());
+            return;
+
+        }
+
+        if(bytesSentPerSecond/originalPollRate>13107 && bytesReceivedPerSecond/originalPollRate<13107){
+            mBuilder.setSmallIcon(R.drawable.upload);
+            mNotifyMgr.notify(mId, mBuilder.build());
+            return;
+        }
+
+        //mNotifyMgr.notify(mId, mBuilder.build());
+
     }
 
 private void convertBytesPerSecondValuesToUnitMeasurement() {
@@ -329,48 +384,48 @@ private void setTotalSentReceiveBytesPerSecond() {
 	
 }
 
-public Long getBytesSentAndReceivedPerSecond() {
-	return bytesSentAndReceivedPerSecond;
-}
+private void loadAllAppsIntoAppDataUsageList(){
+    PackageManager packageManager=this.getPackageManager();
+    List<ApplicationInfo> appList=packageManager.getInstalledApplications(0);
 
-public Long getBytesSentPerSecond() {
-	return bytesSentPerSecond;
-}
+    for (ApplicationInfo appInfo : appList) {
+        String appLabel = (String) packageManager.getApplicationLabel(appInfo);
+        int uid = appInfo.uid;
+        AppDataUsage app = new AppDataUsage(appLabel, uid);
+        appDataUsageList.add(app);
+        Log.d("Initial Add", appLabel + " " + String.valueOf(uid));
 
-public Long getBytesReceivedPerSecond() {
-	return bytesReceivedPerSecond;
-}
-
-public Long getBytesSentAndReceivedSinceBoot() {
-	return bytesSentAndReceivedSinceBoot;
-}
-
-public Long getBytesSentSinceBoot() {
-	return bytesSentSinceBoot;
-}
-
-public Long getBytesReceivedSinceBoot() {
-	return bytesReceivedSinceBoot;
+    }
 }
 
 private String getCurrentInstalledApps() {
-	
-	getCurrentInstalledAppsCount+=1;
-	
-	if (getCurrentInstalledAppsCount>5){
-	PackageManager packageManager=this.getPackageManager();
-    List<ApplicationInfo> appList=packageManager.getInstalledApplications(0);
- 
-    for (ApplicationInfo appInfo : appList) {
-    	String appLabel = (String) packageManager.getApplicationLabel(appInfo);
-    	int uid = appInfo.uid;
-    	AppDataUsage app = new AppDataUsage(appLabel, uid);
-    	if(!appDataUsageList.contains(app)){
-    		appDataUsageList.add(app);
-    	}
-    }
-    getCurrentInstalledAppsCount = 0;
-	}
+
+
+//	PackageManager packageManager=this.getPackageManager();
+//    List<ApplicationInfo> appList=packageManager.getInstalledApplications(0);
+//
+//    for (ApplicationInfo appInfo : appList) {
+//    	String appLabel = (String) packageManager.getApplicationLabel(appInfo);
+//    	int uid = appInfo.uid;
+//    	//AppDataUsage app = new AppDataUsage(appLabel, uid);
+//    	//if(!appDataUsageList.contains(app)){
+//    	//	appDataUsageList.add(app);
+//    	//}
+//
+//        if(!doesAppDataUsageListContain(appLabel)){
+//            AppDataUsage app = new AppDataUsage(appLabel, uid);
+//            appDataUsageList.add(app);
+//        }
+//
+//
+////        for(AppDataUsage check:appDataUsageList){
+////            if(appLabel.equals(check.getAppName())){
+////               break;
+////            }
+////        }
+//    }
+
+
     
     Long maxDelta = (long) 0;
     Long delta = (long) 0;
@@ -391,6 +446,14 @@ private String getCurrentInstalledApps() {
     return appLabel1;
 }
 
+private boolean doesAppDataUsageListContain(String label){
+    for(AppDataUsage check : appDataUsageList){
+        if(check.equals(label)){
+            return true;
+        }
+    }
+    return false;
+}
 	
 private double convertBpsTobps(long bytesPerSecond){
 	return (bytesPerSecond * 8.0);

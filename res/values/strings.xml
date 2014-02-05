@@ -64,6 +64,10 @@
     <string name="pref_widget_title_font_color">Color</string>
     <string name="pref_widget_summary_font_color">Choose predefined font color</string>
     <string name="pref_widget_dialog_font_color">Choose font color</string>
+
+    <string name="pref_title_poll_rate">Poll Rate</string>
+    <string name="pref_summary_poll_rate">Choose how often NetLive updates, longer poll rates decrease battery usage</string>
+    <string name="pref_dialog_title_poll_rate">Choose poll rate</string>
     
         
         
