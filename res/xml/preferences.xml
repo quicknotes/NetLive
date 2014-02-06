@@ -20,7 +20,7 @@
             android:dialogTitle="@string/pref_dialog_title_poll_rate"
             android:entries="@array/pref_poll_rate_entries"
             android:entryValues="@array/pref_poll_rate_values"
-            android:defaultValue="1" />
+            android:defaultValue="5" />
 
         	<!--<CheckBoxPreference-->
             <!--android:key="pref_key_transfer_rate_names"-->

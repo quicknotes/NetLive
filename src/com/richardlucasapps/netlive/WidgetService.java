@@ -70,7 +70,7 @@ public class WidgetService extends Service
         appDataUsageList = new LinkedList();
         fastApp = "";
         getCurrentInstalledAppsCount = 5;
-        pm  = ((PowerManager) getSystemService(Context.POWER_SERVICE));
+        //pm  = ((PowerManager) getSystemService(Context.POWER_SERVICE));
         widgetConfigure = new AppWidgetConfigurePreferencesFragment();
        
     }
@@ -85,11 +85,11 @@ public class WidgetService extends Service
 
     private void buildUpdate()
     {
-    	boolean isScreenOn = pm.isScreenOn();
-    	//Log.d("isScreenOn", String.valueOf(isScreenOn));
-    	if(!isScreenOn ){//|| widgetConfigure.isWidgetPreferencePaneOpen()){
-    		return;
-    	}
+//    	boolean isScreenOn = pm.isScreenOn();
+//    	//Log.d("isScreenOn", String.valueOf(isScreenOn));
+//    	if(!isScreenOn ){//|| widgetConfigure.isWidgetPreferencePaneOpen()){
+//    		return;
+//    	}
     	//DO NOT BUILD UPDATE IF SCREEN OFF, LIKE IN MAIN SERVICE
     	
     	setTotalSentReceiveBytesPerSecond();

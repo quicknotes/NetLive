@@ -11,8 +11,11 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.TrafficStats;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -23,6 +26,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.PowerManager;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 public class MainService extends Service {
 
@@ -50,7 +54,7 @@ public class MainService extends Service {
 	private String receivedString;
 	private String ultimateUnitOfMeasure;
     int appMonitorCounter;
-	private String fastApp;
+	private String fastApp="";
 	List<AppDataUsage> appDataUsageList;
 	String appLabel1;
 	PowerManager pm;
@@ -69,6 +73,8 @@ public class MainService extends Service {
 	private int timeCount;
 	SharedPreferences sharedPref;
 	boolean syncConnPrefDisbale;
+
+    String fastAppWithParens;
 
    long originalPollRate;
    ScheduledFuture beeperHandle;
@@ -112,6 +118,8 @@ public class MainService extends Service {
 	        fastApp = "";
 	        appMonitorCounter = 0;
 	        timeCount = 0;
+
+            loadAllAppsIntoAppDataUsageList();
 	        
 	        //clickIntent notificationIntent = new Intent(this, MainActivity.class);
 	        
@@ -122,7 +130,7 @@ public class MainService extends Service {
 			.setSmallIcon(R.drawable.idle) //R.drawable.ic_launcher
 		    .setContentTitle("")
 		    .setContentText("")
-            //.setPriority(Notification.PRIORITY_MIN)
+            .setPriority(Notification.PRIORITY_HIGH)
 	        .setOngoing(true);
 
         Intent resultIntent = new Intent(this, MainActivity.class);
@@ -171,16 +179,6 @@ public class MainService extends Service {
 	private void update(){
     //TODO still need to divide the values by the poll rate to get an estimate
 
-//        boolean firstRunSinceUpdate = getSharedPreferences("delete_data", MODE_PRIVATE).getBoolean("firstRunSinceUpdate", true);
-//        if (firstRunSinceUpdate){
-//            Log.d("TAG123456", "made it here12");
-//            MyApplication.getInstance().clearApplicationData();//This will delete the data from the previous installation
-//            //getSharedPreferences("START_UP_PREFERENCE", MODE_PRIVATE).getBoolean("firstRunSinceUpdateV1ToV1Point1", false);
-//            getSharedPreferences("delete_data", MODE_PRIVATE)
-//                    .edit()
-//                    .putBoolean("firstRunSinceUpdate", false)
-//                    .commit();
-//        }
 
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -210,15 +208,17 @@ public class MainService extends Service {
         previousBytesReceivedSinceBoot = bytesReceivedSinceBoot;
         
         appMonitorCounter+=1;
-        if(showActiveApp && appMonitorCounter >=10){//TODO change the 10 to something higher, maybe check every 60 seconds
+        if(appMonitorCounter >=60){//TODO change the 10 to something higher, maybe check every 60 seconds
         	if(appDataUsageList.isEmpty()){
                 loadAllAppsIntoAppDataUsageList();
                 Log.d("loading all", "apps into list");
             }
-            fastApp = getCurrentInstalledApps();
+
         	appMonitorCounter = 0;
         }
-       
+
+            fastApp = getCurrentInstalledApps();
+            fastAppWithParens = " " + "(" + fastApp + ")";
 
     	
     	String displayValuesText = "";
@@ -231,7 +231,7 @@ public class MainService extends Service {
       There has got to be a better way to do this.  Maybe get some strategy pattern action involved.
         */
     	if(showActiveApp){
-    		contentTitleText = ultimateUnitOfMeasure + " " + fastApp;
+    		contentTitleText = ultimateUnitOfMeasure + " " + fastAppWithParens;
     	}else{
     		contentTitleText = ultimateUnitOfMeasure;
     	}
@@ -270,6 +270,12 @@ public class MainService extends Service {
 //                    PendingIntent.FLAG_UPDATE_CURRENT
 //                );
 //        mBuilder.setContentIntent(resultPendingIntent);
+
+
+        checkForAndUpdateWidgets();
+
+
+
         if(bytesSentPerSecond/originalPollRate>13107 && bytesReceivedPerSecond/originalPollRate>13107){//1307 bytes is equal to .1Mbit
             mBuilder.setSmallIcon(R.drawable.both);
             mNotifyMgr.notify(mId, mBuilder.build());
@@ -435,7 +441,7 @@ private String getCurrentInstalledApps() {
     	if(!(delta==0)){
     	}
     	if(delta > maxDelta){
-    		appLabel1 = " " + "(" + currentApp.getAppName() + ")";
+    		appLabel1 = currentApp.getAppName();
     		maxDelta = delta;
     	}
     	
@@ -488,5 +494,275 @@ private double convertBpsToGBps(long bytesPerSecond){
 	return  bytesPerSecond / 1000000000.0;
 }
 
+    private void checkForAndUpdateWidgets(){
+        Context context = getApplicationContext();
+        ComponentName name = new ComponentName(context, NetworkSpeedWidget.class);
+        int [] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(name);
+        AppWidgetManager manager = AppWidgetManager.getInstance(this);
+
+        final int N = ids.length;
+
+        for (int i = 0; i < N; i++){
+        int awID = ids[i];
+
+
+        //boolean bool = sharedPref.getBoolean("pref_key_widget_display_unit_of_measure"+awID, true);
+
+        String unitOfMeasure = sharedPref.getString("pref_key_widget_measurement_unit"+awID, "Mbps");
+        boolean displayUnitOfMeasure = true;
+        boolean displayTransferRateLabels = true;
+
+        boolean displayActiveApp = sharedPref.getBoolean("pref_key_widget_active_app"+awID, true);
+        String colorOfFont = sharedPref.getString("pref_key_widget_font_color"+awID, "Black");
+        String sizeOfFont = sharedPref.getString("pref_key_widget_font_size"+awID, "12.0");
+
+        String widgetTextViewLineOneText = "";
+        String widgetTextViewLineTwoText = "";
+        String widgetTextViewLineThreeText = "";
+        String widgetTextViewLineFourText = "";
+        String widgetTextViewLineFiveText = "";
+
+
+
+        convertBytesPerSecondValuesToUnitMeasurement(unitOfMeasure);
+
+//        appMonitorCounter+=1;  //if several widgets, then one will be added to this more than once per 5 seconds, solved this doing N*5
+//        if(appMonitorCounter >= N*5 && displayActiveApp){
+//        fastApp = getCurrentInstalledApps();
+//        String fastAppWithParens = " " + "(" + fastApp + ")";
+//        appMonitorCounter = 0;
+//        }
+
+        sentString = String.format("%.3f", sent/originalPollRate);
+        receivedString = String.format("%.3f", received/originalPollRate);
+        //totalString = String.format("%.3f", total);
+
+        int widgetColor;
+        widgetColor = Color.parseColor(colorOfFont);
+//
+        if(displayActiveApp){
+        widgetTextViewLineOneText = fastApp;
+        }
+
+        breakMeUnitOfMeasure:if(displayUnitOfMeasure){
+        if(widgetTextViewLineOneText.equals("")){
+        widgetTextViewLineOneText = ultimateUnitOfMeasure;
+        break breakMeUnitOfMeasure;
+        }
+        if(widgetTextViewLineTwoText.equals("")){
+        widgetTextViewLineTwoText = ultimateUnitOfMeasure;
+        break breakMeUnitOfMeasure;
+        }
+        if(widgetTextViewLineThreeText.equals("")){
+        widgetTextViewLineThreeText = ultimateUnitOfMeasure;
+        break breakMeUnitOfMeasure;
+        }
+        if(widgetTextViewLineFourText.equals("")){
+        widgetTextViewLineFourText = ultimateUnitOfMeasure;
+        break breakMeUnitOfMeasure;
+        }
+        if(widgetTextViewLineFiveText.equals("")){
+        widgetTextViewLineFiveText = ultimateUnitOfMeasure;
+        break breakMeUnitOfMeasure;
+        }
+        }
+
+
+
+//			breakMeTotalValue:if(true){
+//				String totalValueLocal = totalString;
+//				if(displayTransferRateLabels){
+//					totalValueLocal = "Total: " + totalString;
+//				}
+//				if(widgetTextViewLineOneText.equals("")){
+//					widgetTextViewLineOneText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//				if(widgetTextViewLineTwoText.equals("")){
+//					widgetTextViewLineTwoText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//				if(widgetTextViewLineThreeText.equals("")){
+//					widgetTextViewLineThreeText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//				if(widgetTextViewLineFourText.equals("")){
+//					widgetTextViewLineFourText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//				if(widgetTextViewLineFiveText.equals("")){
+//					widgetTextViewLineFiveText = totalValueLocal;
+//					break breakMeTotalValue;
+//				}
+//
+//			}
+
+
+
+
+
+        breakMeUploadValue:if(true){
+        String uploadValueLocal = sentString;
+        if(displayTransferRateLabels){
+        uploadValueLocal = "Up: " + sentString;
+        }
+        if(widgetTextViewLineOneText.equals("")){
+        widgetTextViewLineOneText = uploadValueLocal;
+        break breakMeUploadValue;
+        }
+        if(widgetTextViewLineTwoText.equals("")){
+        widgetTextViewLineTwoText = uploadValueLocal;
+        break breakMeUploadValue;
+        }
+        if(widgetTextViewLineThreeText.equals("")){
+        widgetTextViewLineThreeText = uploadValueLocal;
+        break breakMeUploadValue;
+        }
+        if(widgetTextViewLineFourText.equals("")){
+        widgetTextViewLineFourText = uploadValueLocal;
+        break breakMeUploadValue;
+        }
+        if(widgetTextViewLineFiveText.equals("")){
+        widgetTextViewLineFiveText = uploadValueLocal;
+        break breakMeUploadValue;
+        }
+
+        }
+
+
+        breakMeDownloadValue:if(true){
+        String downloadValueLocal = receivedString;
+        if(displayTransferRateLabels){
+        downloadValueLocal = "Down: " + receivedString;
+        }
+        if(widgetTextViewLineOneText.equals("")){
+        widgetTextViewLineOneText = downloadValueLocal;
+        break breakMeDownloadValue;
+        }
+        if(widgetTextViewLineTwoText.equals("")){
+        widgetTextViewLineTwoText = downloadValueLocal;
+        break breakMeDownloadValue;
+        }
+        if(widgetTextViewLineThreeText.equals("")){
+        widgetTextViewLineThreeText = downloadValueLocal;
+        break breakMeDownloadValue;
+        }
+        if(widgetTextViewLineFourText.equals("")){
+        widgetTextViewLineFourText = downloadValueLocal;
+        break breakMeDownloadValue;
+        }
+        if(widgetTextViewLineFiveText.equals("")){
+        widgetTextViewLineFiveText = downloadValueLocal;
+        break breakMeDownloadValue;
+        }
+
+        }
+
+
+        //widgetColor = setColorOfWidget(colorOfFont, customColorOfFont);
+
+        if(bytesSentSinceBoot < 0 || bytesReceivedSinceBoot < 0 || bytesSentAndReceivedSinceBoot < 0){
+        widgetTextViewLineOneText = "Device Unsupported, please email me so I can help";
+        }
+
+
+
+        RemoteViews v = new RemoteViews(getPackageName(), R.layout.widget);
+
+        v.setTextViewText(R.id.widgetTextViewLineOne, widgetTextViewLineOneText);
+        v.setTextViewText(R.id.widgetTextViewLineTwo, widgetTextViewLineTwoText);
+        v.setTextViewText(R.id.widgetTextViewLineThree, widgetTextViewLineThreeText);
+        v.setTextViewText(R.id.widgetTextViewLineFour, widgetTextViewLineFourText);
+        //v.setTextViewText(R.id.widgetTextViewLineFive, widgetTextViewLineFiveText);
+
+        v.setTextColor( R.id.widgetTextViewLineOne, widgetColor);
+        v.setTextColor( R.id.widgetTextViewLineTwo, widgetColor);
+        v.setTextColor( R.id.widgetTextViewLineThree, widgetColor);
+        v.setTextColor( R.id.widgetTextViewLineFour, widgetColor);
+        //v.setTextColor( R.id.widgetTextViewLineFive, widgetColor);
+
+        Float tempFloat= Float.parseFloat(sizeOfFont);
+
+        v.setFloat(R.id.widgetTextViewLineOne, "setTextSize", tempFloat);
+        v.setFloat(R.id.widgetTextViewLineTwo, "setTextSize", tempFloat);
+        v.setFloat(R.id.widgetTextViewLineThree, "setTextSize", tempFloat);
+        v.setFloat(R.id.widgetTextViewLineFour, "setTextSize", tempFloat);
+        //v.setFloat(R.id.widgetTextViewLineFive, "setTextSize", tempFloat);
+        manager.updateAppWidget(awID, v);
+        widgetTextViewLineOneText = "";
+
+        //HAD THIS BEFORE ABOVE
+
+
+
+//        previousBytesSentAndReceivedSinceBoot = bytesSentAndReceivedSinceBoot;
+//        previousBytesSentSinceBoot = bytesSentSinceBoot;
+//        previousBytesReceivedSinceBoot = bytesReceivedSinceBoot;
+
+        }
+
+        }
+
+
+    private void convertBytesPerSecondValuesToUnitMeasurement(String unitMeasurement) {
+
+        if (unitMeasurement.equals("bps")){
+            total = convertBpsTobps(bytesSentAndReceivedPerSecond);
+            sent = convertBpsTobps(bytesSentPerSecond);
+            received = convertBpsTobps(bytesReceivedPerSecond);
+            ultimateUnitOfMeasure = "bps";
+            return;
+        }
+        if (unitMeasurement.equals("Kbps")){
+            total = convertBpsToKbps(bytesSentAndReceivedPerSecond);
+            sent = convertBpsToKbps(bytesSentPerSecond);
+            received = convertBpsToKbps(bytesReceivedPerSecond);
+            ultimateUnitOfMeasure = "kbps";
+            return;
+        }
+        if (unitMeasurement.equals("Mbps")){
+            total = convertBpsToMbps(bytesSentAndReceivedPerSecond);
+            sent = convertBpsToMbps(bytesSentPerSecond);
+            received = convertBpsToMbps(bytesReceivedPerSecond);
+            ultimateUnitOfMeasure = "Mbps";
+            return;
+        }
+        if (unitMeasurement.equals("Gbps")){
+            total = convertBpsToGbps(bytesSentAndReceivedPerSecond);
+            sent = convertBpsToGbps(bytesSentPerSecond);
+            received = convertBpsToGbps(bytesReceivedPerSecond);
+            ultimateUnitOfMeasure = "Gbps";
+            return;
+        }
+        if (unitMeasurement.equals("Bps")){
+            total = convertBpsToBps(bytesSentAndReceivedPerSecond);
+            sent = convertBpsToBps(bytesSentPerSecond);
+            received = convertBpsToBps(bytesReceivedPerSecond);
+            ultimateUnitOfMeasure = "Bps";
+            return;
+        }
+        if (unitMeasurement.equals("KBps")){
+            total = convertBpsToKBps(bytesSentAndReceivedPerSecond);
+            sent = convertBpsToKBps(bytesSentPerSecond);
+            received = convertBpsToKBps(bytesReceivedPerSecond);
+            ultimateUnitOfMeasure = "kBps";
+            return;
+        }
+        if (unitMeasurement.equals("MBps")){
+            total = convertBpsToMBps(bytesSentAndReceivedPerSecond);
+            sent = convertBpsToMBps(bytesSentPerSecond);
+            received = convertBpsToMBps(bytesReceivedPerSecond);
+            ultimateUnitOfMeasure = "MBps";
+            return;
+        }
+        if (unitMeasurement.equals("GBps")){
+            total = convertBpsToGBps(bytesSentAndReceivedPerSecond);
+            sent = convertBpsToGBps(bytesSentPerSecond);
+            received = convertBpsToGBps(bytesReceivedPerSecond);
+            ultimateUnitOfMeasure = "GBps";
+            return;
+        }
+
+    }
 
 }

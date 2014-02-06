@@ -49,13 +49,14 @@ public class NetworkSpeedWidget extends AppWidgetProvider {
         I got help from here:
         http://www.parallelrealities.co.uk/2011/09/using-alarmmanager-for-updating-android.html
          */
-		final AlarmManager m = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE); 
-		final Intent i = new Intent(context, WidgetService.class);
-		if (service == null)
-		{
-			service = PendingIntent.getService(context, 0, i, PendingIntent.FLAG_CANCEL_CURRENT);
-		}
-		m.setRepeating(AlarmManager.RTC, System.currentTimeMillis(),1000,service);
+
+//		final AlarmManager m = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+//		final Intent i = new Intent(context, WidgetService.class);
+//		if (service == null)
+//		{
+//			service = PendingIntent.getService(context, 0, i, PendingIntent.FLAG_CANCEL_CURRENT);
+//		}
+//		m.setRepeating(AlarmManager.RTC, System.currentTimeMillis(),1000,service);
 
 
 
