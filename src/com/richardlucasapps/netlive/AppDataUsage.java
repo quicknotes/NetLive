@@ -14,20 +14,20 @@ public class AppDataUsage {
 	private String appName;
 	private int uId;
 	private long previousTotalData;
-	private File dir;
-	private File uidFileDir;
-	private File uidActualFileReceived;
-	private File uidActualFileSent;
-	private BufferedReader brReceived;
-    private BufferedReader brSent;
-    private String textReceived;
-	private String textSent;
-	private String receivedLine;
-    private String sentLine;
-    
-    private final String uidStatPath = "/proc/uid_stat/";
-    private final String uidRcv = "tcp_rcv";
-    private final String uidSnd = "tcp_snd";
+//	private File dir;
+//	private File uidFileDir;
+//	private File uidActualFileReceived;
+//	private File uidActualFileSent;
+//	private BufferedReader brReceived;
+//    private BufferedReader brSent;
+//    private String textReceived;
+//	private String textSent;
+//	private String receivedLine;
+//    private String sentLine;
+//
+//    private final String uidStatPath = "/proc/uid_stat/";
+//    private final String uidRcv = "tcp_rcv";
+//    private final String uidSnd = "tcp_snd";
 
 //	@Override
 //	public boolean equals(Object obj) {
@@ -48,13 +48,13 @@ public class AppDataUsage {
 //        uidActualFileReceived = new File(uidFileDir,uidRcv);
 //        uidActualFileSent = new File(uidFileDir,uidSnd);
 
-        try{
-        brReceived = new BufferedReader(new FileReader(uidActualFileReceived));
-        brSent = new BufferedReader(new FileReader(uidActualFileSent));
-
-        }catch(Exception e){
-
-        }
+//        try{
+//        brReceived = new BufferedReader(new FileReader(uidActualFileReceived));
+//        brSent = new BufferedReader(new FileReader(uidActualFileSent));
+//
+//        }catch(Exception e){
+//
+//        }
 
 	}
     //TODO, what might be chay is if I try the getUIDbytes natural way, and if that shit returns 0, then I can getTotalBytesManual
@@ -100,21 +100,9 @@ public class AppDataUsage {
 		previousTotalData = currentTotalData;
 		return rate;
 	}
-	
-	public int getuId() {
-		return uId;
-	}
 
-	public void setuId(int uId) {
-		this.uId = uId;
-	}
-	
 	public String getAppName() {
 		return appName;
-	}
-
-	public void setAppName(String appName) {
-		this.appName = appName;
 	}
 
 	@Override
