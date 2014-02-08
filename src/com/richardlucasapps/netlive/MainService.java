@@ -271,6 +271,7 @@ public class MainService extends Service {
 
 	
 	private void update(){
+        Log.d("Update", "Run");
 
         bytesSentSinceBoot              = TrafficStats.getTotalTxBytes();
         bytesReceivedSinceBoot          = TrafficStats.getTotalRxBytes();
@@ -390,7 +391,7 @@ private String getActiveApp() {
     	}
     }
     if(appLabel == ""){
-    	return "Error,email me.";
+    	return "...";
     }
     return appLabel;
 }

@@ -122,7 +122,7 @@ public class MainActivity extends Activity {
 	private void showAboutDialog() {
 		 AlertDialog.Builder aboutBuilder = new AlertDialog.Builder(this);
 		 TextView myMsg = new TextView(this);
-		 SpannableString s = new SpannableString("NetLive v2.0 Beta\n\nrichardlucasapps.com");
+		 SpannableString s = new SpannableString("NetLive v2.2 Beta\n\nrichardlucasapps.com");
 		 Linkify.addLinks(s, Linkify.WEB_URLS);
 		 myMsg.setText(s);
 		 myMsg.setTextSize(15);
@@ -148,7 +148,7 @@ public class MainActivity extends Activity {
 		 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		 //TextView myMsg = new TextView(this);
 		String s = "Thank you for using my app.\n\nIf you have any questions, recommendations, or you run into" +
-			 		" a problem with the app, please do not hesititate to contact me" +
+			 		" a problem with the app, please do not hesitate to contact me" +
 			 		" by going to the \"Send Feedback\" option in the menu.";
 		
 		String overviewTitle = "Overview";
