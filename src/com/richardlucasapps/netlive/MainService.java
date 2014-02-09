@@ -11,11 +11,9 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.TrafficStats;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -26,7 +24,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
 import android.util.Log;
-import android.widget.RemoteViews;
 
 public class MainService extends Service {
 
@@ -48,6 +45,7 @@ public class MainService extends Service {
 	private String activeApp ="";
 	List<AppDataUsage> appDataUsageList;
 	int appMonitorCounter;
+
 
 
 
@@ -79,6 +77,10 @@ public class MainService extends Service {
     boolean showActiveApp;
     String contentTitleText="";
 
+    ActiveAppGetter activeAppGetter;
+
+    //UidDataGetter uidDataGetter;
+
 
     @Override
     public void onDestroy(){
@@ -88,7 +90,7 @@ public class MainService extends Service {
             //The only way there will be a null pointer, is if the disabled preference is checked.  Because if it is, onDestory is called right away, without creating the beeperHandle
         }
         super.onDestroy();
-        //what I gotta do is kill the schedule Executor service
+
     }
 
 	@Override
@@ -99,6 +101,9 @@ public class MainService extends Service {
             onDestroy();
             return;
         }
+
+
+
 
         unitMeasurement                 = sharedPref.getString("pref_key_measurement_unit", "Mbps");
         pollRate                        = Long.parseLong(sharedPref.getString("pref_key_poll_rate", "1"));
@@ -112,11 +117,12 @@ public class MainService extends Service {
         appMonitorCounter               = 0;
 
 
-        previousBytesSentSinceBoot = 0L;
-        previousBytesReceivedSinceBoot = 0L;
-        appDataUsageList = new ArrayList<AppDataUsage>();
+        previousBytesSentSinceBoot      = 0L;
+        previousBytesReceivedSinceBoot  = 0L;
+        appDataUsageList                = new ArrayList<AppDataUsage>();
 
         loadAllAppsIntoAppDataUsageList();
+        activeAppGetter                 = determineUidDataGatherMethod();
 
 
         mNotifyMgr =
@@ -159,7 +165,78 @@ public class MainService extends Service {
         return null;
     }
 
-    private UnitConverter getUnitConverter(String unitMeasurement){
+    private ActiveAppGetter determineUidDataGatherMethod(){
+        //TODO I think I will have to maintain that useTrafficStatsAPI boolean from this class.  And simply separtate the methods within app data usage and call them accordingly
+
+        long bytesTransferred      = 0L;
+
+        for(AppDataUsage currentApp : appDataUsageList){
+            int uid = currentApp.getUid();
+            bytesTransferred = TrafficStats.getUidRxBytes(uid) + TrafficStats.getUidTxBytes(uid);
+            if(bytesTransferred > 0){
+                return setUidDataGatherMethodToTrafficStatsAPI(true);//TODO Change to True
+
+            }
+        }
+
+        return setUidDataGatherMethodToTrafficStatsAPI(false);
+
+    }
+
+    private ActiveAppGetter setUidDataGatherMethodToTrafficStatsAPI(boolean b){
+        if(b){
+
+            return (new ActiveAppGetter() {
+                @Override
+                public String getActiveApp() {
+                    Log.d("setUidDataGatherMethodToTrafficStatsAPI", "traffic stats API");
+                    long maxDelta   = 0L;
+                    long delta      = 0L;
+                    String appLabel = "";
+
+                    for(AppDataUsage currentApp : appDataUsageList){
+                        delta = currentApp.getRateWithTrafficStatsAPI();
+
+                        if(delta > maxDelta){
+                            appLabel = currentApp.getAppName();
+                            maxDelta = delta;
+                        }
+                    }
+                    if(appLabel == ""){
+                        return "...";
+                    }
+                    return appLabel;
+
+                }
+            });
+        }else{
+
+            return (new ActiveAppGetter() {
+                @Override
+                public String getActiveApp() {
+                    Log.d("setUidDataGatherMethodToTrafficStatsAPI", "MANUAL");
+                    long maxDelta = 0L;
+                    long delta = 0L;
+                    String appLabel = "";
+
+                    for (AppDataUsage currentApp : appDataUsageList) {
+                        delta = currentApp.getRateManual();
+                        if (delta > maxDelta) {
+                            appLabel = currentApp.getAppName();
+                            maxDelta = delta;
+                        }
+                    }
+                    if (appLabel == "") {
+                        return "...";
+                    }
+                    return appLabel;
+                }
+            });
+        }
+    }
+
+
+       private UnitConverter getUnitConverter(String unitMeasurement){
 
         if (unitMeasurement.equals("bps")){
             return (new UnitConverter() {
@@ -243,7 +320,7 @@ public class MainService extends Service {
             return (new NotificationContentTitleSetter() {
                 @Override
                 public String set() {
-                    return " " + "("+ getActiveApp()+")";
+                    return " " + "("+ activeAppGetter.getActiveApp()+")";
                 }
             });
         }
@@ -286,7 +363,7 @@ public class MainService extends Service {
         previousBytesReceivedSinceBoot  = bytesReceivedSinceBoot;
         
         appMonitorCounter+=1;
-        if(appMonitorCounter >=500){//TODO change the 10 to something higher, maybe check every 60 seconds
+        if(appMonitorCounter >=500/pollRate){//divide by pollRate so that if you have a pollRate of 10, that will end up being 500 seconds, not 5000
             loadAllAppsIntoAppDataUsageList();
         	appMonitorCounter = 0;
         }
@@ -376,7 +453,7 @@ private void loadAllAppsIntoAppDataUsageList(){
     }
 }
 
-private String getActiveApp() {
+private String getOldActiveApp() {
 
     
     long maxDelta   = 0L;
@@ -384,7 +461,8 @@ private String getActiveApp() {
     String appLabel = "";
     
     for(AppDataUsage currentApp : appDataUsageList){
-    	delta = currentApp.getRate();
+        delta = currentApp.getRateWithTrafficStatsAPI();
+        Log.d("Rate", String.valueOf(delta));
     	if(delta > maxDelta){
     		appLabel = currentApp.getAppName();
     		maxDelta = delta;
@@ -433,7 +511,7 @@ private String getActiveApp() {
 //
 ////        appMonitorCounter+=1;  //if several widgets, then one will be added to this more than once per 5 seconds, solved this doing N*5
 ////        if(appMonitorCounter >= N*5 && displayActiveApp){
-////        activeApp = getActiveApp();
+////        activeApp = getOldActiveApp();
 ////        String fastAppWithParens = " " + "(" + activeApp + ")";
 ////        appMonitorCounter = 0;
 ////        }

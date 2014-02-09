@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
@@ -14,40 +15,35 @@ public class AppDataUsage {
 	private String appName;
 	private int uId;
 	private long previousTotalData;
-//	private File dir;
-//	private File uidFileDir;
-//	private File uidActualFileReceived;
-//	private File uidActualFileSent;
-//	private BufferedReader brReceived;
-//    private BufferedReader brSent;
-//    private String textReceived;
-//	private String textSent;
-//	private String receivedLine;
-//    private String sentLine;
-//
-//    private final String uidStatPath = "/proc/uid_stat/";
-//    private final String uidRcv = "tcp_rcv";
-//    private final String uidSnd = "tcp_snd";
 
-//	@Override
-//	public boolean equals(Object obj) {
+//    private File uidFileDir;
 //
-//	    final AppDataUsage other = (AppDataUsage) obj;
-//	    if(this.appName.equals(other.appName)){
-//	    	return true;
-//	    }
-//		return false;
-//	}
+//    private File dir;
+//	  private File uidActualFileReceived;
+//	  private File uidActualFileSent;
+//
+//	  private static BufferedReader brReceived;
+//    private static BufferedReader brSent;
+////    private static String textReceived;
+////	private static String textSent;
+////	private static String receivedLine;
+////    private static String sentLine;
+
+    private static final String uidStatPath = "/proc/uid_stat/";
+    private static final String uidRcv = "tcp_rcv";
+    private static final String uidSnd = "tcp_snd";
+
 
 	public AppDataUsage(String appName1, int uid1) {
 		this.appName = appName1;
 		this.uId = uid1;
-		this.previousTotalData = getTotalBytesManual(uid1);
-//        dir = new File(uidStatPath);
-//        this.uidFileDir = new File(uidStatPath+String.valueOf(this.uId));
-//        uidActualFileReceived = new File(uidFileDir,uidRcv);
-//        uidActualFileSent = new File(uidFileDir,uidSnd);
+		this.previousTotalData = getTotalBytesManual();
 
+//        this.dir = new File(uidStatPath);
+//        this.uidFileDir = new File(uidStatPath+String.valueOf(this.uId));
+//        this.uidActualFileReceived = new File(uidFileDir,uidRcv);
+//        this.uidActualFileSent = new File(uidFileDir,uidSnd);
+//
 //        try{
 //        brReceived = new BufferedReader(new FileReader(uidActualFileReceived));
 //        brSent = new BufferedReader(new FileReader(uidActualFileSent));
@@ -57,49 +53,62 @@ public class AppDataUsage {
 //        }
 
 	}
+
+    public int getUid(){
+        return this.uId;
+    }
+
     //TODO, what might be chay is if I try the getUIDbytes natural way, and if that shit returns 0, then I can getTotalBytesManual
-	private Long getTotalBytesManual(int localUid){
+	public Long getTotalBytesManual(){
+
+        File dir                    = new File(uidStatPath);
+        File uidFileDir             = new File(uidStatPath+String.valueOf(this.uId));
+        File uidActualFileReceived  = new File(uidFileDir,uidRcv);
+        File uidActualFileSent      = new File(uidFileDir,uidSnd);
+
+        String[] children = dir.list();
+        if (!Arrays.asList(children).contains(String.valueOf(this.uId))) {
+            return 0L;
+        }
+
+        String textReceived ="0";
+        String textSent     ="0";
+
+        try{
+            BufferedReader brReceived   = new BufferedReader(new FileReader(uidActualFileReceived));
+            BufferedReader brSent       = new BufferedReader(new FileReader(uidActualFileSent));
+            textReceived         = brReceived.readLine();
+            textSent             = brSent.readLine();
+        }catch(FileNotFoundException e){
+
+        }catch(IOException e){
+
+        }
+        return Long.valueOf(textReceived).longValue() + Long.valueOf(textSent).longValue();
 
         //Log.d("uidBytesValues", String.valueOf(TrafficStats.getUidRxBytes(localUid)) + "  " + String.valueOf(TrafficStats.getUidTxBytes(localUid)));
-        return Long.valueOf(TrafficStats.getUidRxBytes(localUid)) + Long.valueOf(TrafficStats.getUidTxBytes(localUid));
-	
-//	dir = new File(uidStatPath);
-//	String[] children = dir.list();
-//	if(!Arrays.asList(children).contains(String.valueOf(localUid))){
-//		return 0L;
-//	}
-//	uidFileDir = new File(uidStatPath+String.valueOf(localUid));
-//	uidActualFileReceived = new File(uidFileDir,uidRcv);
-//	uidActualFileSent = new File(uidFileDir,uidSnd);
-//
-//	 textReceived = "0";
-//	 textSent = "0";
-//
-//        try {
-//            brReceived = new BufferedReader(new FileReader(uidActualFileReceived));
-//            brSent = new BufferedReader(new FileReader(uidActualFileSent));
-//
-//            if ((receivedLine = brReceived.readLine()) != null) {
-//	        	textReceived = receivedLine;
-//	        }
-//	        if ((sentLine = brSent.readLine()) != null) {
-//	        	textSent = sentLine;
-//	        }
-//
-//	    }
-//	    catch (IOException e) {
-//
-//	    }
-//	 return Long.valueOf(textReceived).longValue() + Long.valueOf(textSent).longValue();
-	 
-	}
-	
-	public Long getRate(){
-		Long currentTotalData = getTotalBytesManual(uId);
-		Long rate = currentTotalData - previousTotalData;
+        //return Long.valueOf(TrafficStats.getUidRxBytes(localUid)) + Long.valueOf(TrafficStats.getUidTxBytes(localUid));
+    }
+
+   public Long getStatsWithAPI(){
+        return Long.valueOf(TrafficStats.getUidRxBytes(this.uId)) + Long.valueOf(TrafficStats.getUidTxBytes(this.uId));
+
+    }
+
+    public Long getRateWithTrafficStatsAPI(){
+		long currentTotalData = getStatsWithAPI();
+		long rate = currentTotalData - previousTotalData;
 		previousTotalData = currentTotalData;
 		return rate;
 	}
+
+    public Long getRateManual(){
+        long currentTotalData = getTotalBytesManual();
+        long rate = currentTotalData - previousTotalData;
+        previousTotalData = currentTotalData;
+        return rate;
+
+    }
 
 	public String getAppName() {
 		return appName;
