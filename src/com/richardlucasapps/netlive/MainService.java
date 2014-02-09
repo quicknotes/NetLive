@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.TrafficStats;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.preference.PreferenceManager;
@@ -25,6 +26,10 @@ import android.content.pm.PackageManager;
 
 import android.util.Log;
 
+
+/*TODO perhaps disable when screen is off using a broadcast receiver, depending on how much battery this ish uses, though may be a good idea to do this regardless
+
+*/
 public class MainService extends Service {
 
     private final ScheduledExecutorService scheduler =
@@ -79,6 +84,7 @@ public class MainService extends Service {
 
     ActiveAppGetter activeAppGetter;
 
+    PowerManager pm;
     //UidDataGetter uidDataGetter;
 
 
@@ -95,6 +101,7 @@ public class MainService extends Service {
 
 	@Override
 	public void onCreate() {
+        pm                              = (PowerManager) getSystemService(Context.POWER_SERVICE);
         sharedPref                      = PreferenceManager.getDefaultSharedPreferences(this);
 
         if(sharedPref.getBoolean("pref_key_auto_start", false)){
@@ -348,7 +355,12 @@ public class MainService extends Service {
 
 	
 	private void update(){
+        if(!pm.isScreenOn()){
+            return;
+        }
+
         Log.d("Update", "Run");
+
 
         bytesSentSinceBoot              = TrafficStats.getTotalTxBytes();
         bytesReceivedSinceBoot          = TrafficStats.getTotalRxBytes();
@@ -453,26 +465,7 @@ private void loadAllAppsIntoAppDataUsageList(){
     }
 }
 
-private String getOldActiveApp() {
 
-    
-    long maxDelta   = 0L;
-    long delta      = 0L;
-    String appLabel = "";
-    
-    for(AppDataUsage currentApp : appDataUsageList){
-        delta = currentApp.getRateWithTrafficStatsAPI();
-        Log.d("Rate", String.valueOf(delta));
-    	if(delta > maxDelta){
-    		appLabel = currentApp.getAppName();
-    		maxDelta = delta;
-    	}
-    }
-    if(appLabel == ""){
-    	return "...";
-    }
-    return appLabel;
-}
 
 
 //    private void checkForAndUpdateWidgets(){

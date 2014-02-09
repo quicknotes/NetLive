@@ -15,11 +15,6 @@ public class SettingsFragment extends PreferenceFragment{
 	
 	ListPreference notificationDrawerUnitOfMeasurePreference;
     CheckBoxPreference disableCheckBoxPreference;
-    MyApplication app;
-    SharedPreferences.Editor edit;
-
-    SharedPreferences sharedPref;
-    boolean syncConnPrefDisbale;
 
     ListPreference pollRatePreference;
     CheckBoxPreference activeAppPreference;
@@ -99,26 +94,7 @@ public class SettingsFragment extends PreferenceFragment{
 
         @Override
         public boolean onPreferenceChange(Preference preference, Object newValue) {
-//
-////            app = new MyApplication();
-////            sharedPref = PreferenceManager.getDefaultSharedPreferences(app.getInstance());
-////            edit = sharedPref.edit();
-//
-//
-//            if(!disableCheckBoxPreference.isChecked()){// So this runs after I check the box //for some reason, when I check the box, it reads it as unchecked.  So if I throw that not (!) there, we are all set
-//                Log.d("disableCheckBoxPreferenceListener", "isChecked");
-//                edit.putBoolean("pref_key_auto_start",true);
-//                edit.commit();
-//                return true;
-//
-//            }
-//            //this will run if i uncheck the box
-//            edit.putBoolean("pref_key_auto_start",false);
-//            edit.commit();
-//            Intent intent = new Intent(getActivity(), MainService.class);
-//            getActivity().startService(intent);
-//            Log.d("disableCheckBoxPreferenceListener", "NotChecked");
-//            getActivity().stopService(new Intent(getActivity(), MainService.class));
+
 
             ((CheckBoxPreference) preference).setChecked((Boolean)newValue);
             getActivity().stopService(new Intent(getActivity(), MainService.class));
