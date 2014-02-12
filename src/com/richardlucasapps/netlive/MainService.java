@@ -48,8 +48,6 @@ public class MainService extends Service {
     List<AppDataUsage> appDataUsageList;
     int appMonitorCounter;
 
-    private static boolean widgetExist;
-
     int mId;
 
     NotificationCompat.Builder mBuilder;
@@ -82,8 +80,15 @@ public class MainService extends Service {
 
     int[] ids;
     AppWidgetManager manager;
-
     int N;
+
+    /*
+    So this guys is interesting.  Here is my problem.  When the user turns their screen on, the service will pick up reporting where it left off.
+    But since it has no notion of how long it has been so it actually updated, upon the first update the numbers will be artificially high-
+    reporting your transfer rate much higher than it actually is.  So this variable will keep track of this down time, and I will use it
+    to prevent a spike if the user looks at NetLive's reporting as soon as they turn on their screen.
+     */
+    int updatesMissed;
 
     @Override
     public void onCreate() {
@@ -91,14 +96,14 @@ public class MainService extends Service {
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
         autoStart = !(sharedPref.getBoolean("pref_key_auto_start", false));
-        widgetExist = sharedPref.getBoolean("widget_exists", false);
+        boolean widgetExist = sharedPref.getBoolean("widget_exists", false);
 
-        if (autoStart || widgetExist) {
-
-        } else {//if the app is disabled and there are no widgets, it will simply destory itself.
+        if (!autoStart && !widgetExist) {
             this.onDestroy();
             return;
         }
+
+        updatesMissed = 0;
 
         unitMeasurement = sharedPref.getString("pref_key_measurement_unit", "Mbps");
         pollRate = Long.parseLong(sharedPref.getString("pref_key_poll_rate", "1"));
@@ -110,8 +115,8 @@ public class MainService extends Service {
 
         appMonitorCounter = 0;
 
-        previousBytesSentSinceBoot = 0L;
-        previousBytesReceivedSinceBoot = 0L;
+        previousBytesSentSinceBoot = TrafficStats.getTotalTxBytes();//i dont initialize these to 0, because if i do, when app first reports, the rate will be crazy high
+        previousBytesReceivedSinceBoot = TrafficStats.getTotalRxBytes();
         appDataUsageList = new ArrayList<AppDataUsage>();
 
         loadAllAppsIntoAppDataUsageList();
@@ -192,7 +197,7 @@ public class MainService extends Service {
             int uid = currentApp.getUid();
             bytesTransferred = TrafficStats.getUidRxBytes(uid) + TrafficStats.getUidTxBytes(uid);
             if (bytesTransferred > 0) {
-                return setUidDataGatherMethodToTrafficStatsAPI(true);//TODO Change to True
+                return setUidDataGatherMethodToTrafficStatsAPI(true);
 
             }
         }
@@ -220,7 +225,7 @@ public class MainService extends Service {
                             maxDelta = delta;
                         }
                     }
-                    if (appLabel == "") {
+                    if (appLabel.equals("")) {
                         return "...";
                     }
                     return appLabel;
@@ -244,7 +249,7 @@ public class MainService extends Service {
                             maxDelta = delta;
                         }
                     }
-                    if (appLabel == "") {
+                    if (appLabel.equals("")) {
                         return "...";
                     }
                     return appLabel;
@@ -385,8 +390,18 @@ public class MainService extends Service {
 
     private void updateOnlyNotificationEnabled() {
         if (!pm.isScreenOn()) {//TODO a snazier thing might be to do a broadcast receiver that pauses the schedule executor service when screen is off, and renables when screen on.
+            updatesMissed+=1;
             return;          //I don't think cancelling the service all together would be a good idea when screen is off, I don't want to keep calling onCreate when the user turns their screen on
         }
+
+        long correctedPollRate;
+        if(updatesMissed!=0){
+            correctedPollRate = pollRate * updatesMissed;
+        }else{
+            correctedPollRate = pollRate;
+        }
+        updatesMissed = 0;
+
 
         bytesSentSinceBoot = TrafficStats.getTotalTxBytes();
         bytesReceivedSinceBoot = TrafficStats.getTotalRxBytes();
@@ -394,14 +409,14 @@ public class MainService extends Service {
         bytesSentPerSecond = bytesSentSinceBoot - previousBytesSentSinceBoot;
         bytesReceivedPerSecond = bytesReceivedSinceBoot - previousBytesReceivedSinceBoot;
 
-        sentString = String.format("%.3f", converter.convert(bytesSentPerSecond) / pollRate);
-        receivedString = String.format("%.3f", converter.convert(bytesReceivedPerSecond) / pollRate);
+        sentString = String.format("%.3f", converter.convert(bytesSentPerSecond / correctedPollRate));
+        receivedString = String.format("%.3f", converter.convert(bytesReceivedPerSecond / correctedPollRate));
 
         previousBytesSentSinceBoot = bytesSentSinceBoot;
         previousBytesReceivedSinceBoot = bytesReceivedSinceBoot;
 
         appMonitorCounter += 1;
-        if (appMonitorCounter >= 500 / pollRate) {//divide by pollRate so that if you have a pollRate of 10, that will end up being 500 seconds, not 5000
+        if (appMonitorCounter >= (500 / pollRate)) {//divide by pollRate so that if you have a pollRate of 10, that will end up being 500 seconds, not 5000
             loadAllAppsIntoAppDataUsageList();
             appMonitorCounter = 0;
         }
@@ -429,28 +444,28 @@ public class MainService extends Service {
         mBuilder.setWhen(System.currentTimeMillis());
 
 
-        if (bytesSentPerSecond / pollRate < 13107 && bytesReceivedPerSecond / pollRate < 13107) {
+
+        if (bytesSentPerSecond / correctedPollRate < 13107 && bytesReceivedPerSecond / correctedPollRate < 13107) {
             mBuilder.setSmallIcon(R.drawable.idle);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-        if (!(bytesSentPerSecond / pollRate > 13107) && bytesReceivedPerSecond / pollRate > 13107) {
+        if (!(bytesSentPerSecond / correctedPollRate > 13107) && bytesReceivedPerSecond / correctedPollRate > 13107) {
             mBuilder.setSmallIcon(R.drawable.download);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-        if (bytesSentPerSecond / pollRate > 13107 && bytesReceivedPerSecond / pollRate < 13107) {
+        if (bytesSentPerSecond / correctedPollRate > 13107 && bytesReceivedPerSecond / correctedPollRate < 13107) {
             mBuilder.setSmallIcon(R.drawable.upload);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-        if (bytesSentPerSecond / pollRate > 13107 && bytesReceivedPerSecond / pollRate > 13107) {//1307 bytes is equal to .1Mbit
+        if (bytesSentPerSecond / correctedPollRate > 13107 && bytesReceivedPerSecond / correctedPollRate > 13107) {//1307 bytes is equal to .1Mbit
             mBuilder.setSmallIcon(R.drawable.both);
             mNotifyMgr.notify(mId, mBuilder.build());
-            return;
         }
 
     }
@@ -460,10 +475,18 @@ public class MainService extends Service {
     }
 
     private void updateNotificationAndWidgetEnabled() {
-
-        if (!pm.isScreenOn()) {
-            return;
+        if (!pm.isScreenOn()) {//TODO a snazier thing might be to do a broadcast receiver that pauses the schedule executor service when screen is off, and renables when screen on.
+            updatesMissed+=1;
+            return;          //I don't think cancelling the service all together would be a good idea when screen is off, I don't want to keep calling onCreate when the user turns their screen on
         }
+
+        long correctedPollRate;
+        if(updatesMissed!=0){
+            correctedPollRate = pollRate * updatesMissed;
+        }else{
+            correctedPollRate = pollRate;
+        }
+        updatesMissed = 0;
 
         bytesSentSinceBoot = TrafficStats.getTotalTxBytes();
         bytesReceivedSinceBoot = TrafficStats.getTotalRxBytes();
@@ -471,8 +494,8 @@ public class MainService extends Service {
         bytesSentPerSecond = bytesSentSinceBoot - previousBytesSentSinceBoot;
         bytesReceivedPerSecond = bytesReceivedSinceBoot - previousBytesReceivedSinceBoot;
 
-        sentString = String.format("%.3f", converter.convert(bytesSentPerSecond) / pollRate);
-        receivedString = String.format("%.3f", converter.convert(bytesReceivedPerSecond) / pollRate);
+        sentString = String.format("%.3f", converter.convert(bytesSentPerSecond) / correctedPollRate);
+        receivedString = String.format("%.3f", converter.convert(bytesReceivedPerSecond) / correctedPollRate);
 
         previousBytesSentSinceBoot = bytesSentSinceBoot;
         previousBytesReceivedSinceBoot = bytesReceivedSinceBoot;
@@ -519,8 +542,8 @@ public class MainService extends Service {
 
             UnitConverter c = widgetUnitMeasurementConverters.get(i);
 
-            String sentString = String.format("%.3f", c.convert(bytesSentPerSecond) / pollRate);
-            String receivedString = String.format("%.3f", c.convert(bytesReceivedPerSecond) / pollRate);
+            String sentString = String.format("%.3f", c.convert(bytesSentPerSecond) / correctedPollRate);
+            String receivedString = String.format("%.3f", c.convert(bytesReceivedPerSecond) / correctedPollRate);
 
             widgetTextViewLineOneText += unitMeasurement + "\n";
             widgetTextViewLineOneText += "Up: " + sentString + "\n";
@@ -533,28 +556,28 @@ public class MainService extends Service {
         }
 
 
-        if (bytesSentPerSecond / pollRate < 13107 && bytesReceivedPerSecond / pollRate < 13107) {
+
+        if (bytesSentPerSecond / correctedPollRate < 13107 && bytesReceivedPerSecond / correctedPollRate < 13107) {
             mBuilder.setSmallIcon(R.drawable.idle);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-        if (!(bytesSentPerSecond / pollRate > 13107) && bytesReceivedPerSecond / pollRate > 13107) {
+        if (!(bytesSentPerSecond / correctedPollRate > 13107) && bytesReceivedPerSecond / correctedPollRate > 13107) {
             mBuilder.setSmallIcon(R.drawable.download);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-        if (bytesSentPerSecond / pollRate > 13107 && bytesReceivedPerSecond / pollRate < 13107) {
+        if (bytesSentPerSecond / correctedPollRate > 13107 && bytesReceivedPerSecond / correctedPollRate < 13107) {
             mBuilder.setSmallIcon(R.drawable.upload);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-        if (bytesSentPerSecond / pollRate > 13107 && bytesReceivedPerSecond / pollRate > 13107) {//1307 bytes is equal to .1Mbit
+        if (bytesSentPerSecond / correctedPollRate > 13107 && bytesReceivedPerSecond / correctedPollRate > 13107) {//1307 bytes is equal to .1Mbit
             mBuilder.setSmallIcon(R.drawable.both);
             mNotifyMgr.notify(mId, mBuilder.build());
-            return;
         }
 
     }
@@ -593,7 +616,6 @@ public class MainService extends Service {
 
 
         }
-        return;
     }
 
 
@@ -613,18 +635,24 @@ public class MainService extends Service {
 
     private void updateWidgets() {
 
-        if (!pm.isScreenOn()) {
-            return;
+        if (!pm.isScreenOn()) {//TODO a snazier thing might be to do a broadcast receiver that pauses the schedule executor service when screen is off, and renables when screen on.
+            updatesMissed+=1;
+            return;          //I don't think cancelling the service all together would be a good idea when screen is off, I don't want to keep calling onCreate when the user turns their screen on
         }
+
+        long correctedPollRate;
+        if(updatesMissed!=0){
+            correctedPollRate = pollRate * updatesMissed;
+        }else{
+            correctedPollRate = pollRate;
+        }
+        updatesMissed = 0;
 
         bytesSentSinceBoot = TrafficStats.getTotalTxBytes();
         bytesReceivedSinceBoot = TrafficStats.getTotalRxBytes();
 
         bytesSentPerSecond = bytesSentSinceBoot - previousBytesSentSinceBoot;
         bytesReceivedPerSecond = bytesReceivedSinceBoot - previousBytesReceivedSinceBoot;
-
-        sentString = String.format("%.3f", converter.convert(bytesSentPerSecond) / pollRate);
-        receivedString = String.format("%.3f", converter.convert(bytesReceivedPerSecond) / pollRate);
 
         previousBytesSentSinceBoot = bytesSentSinceBoot;
         previousBytesReceivedSinceBoot = bytesReceivedSinceBoot;
@@ -651,8 +679,8 @@ public class MainService extends Service {
 
             UnitConverter c = widgetUnitMeasurementConverters.get(i);
 
-            String sentString = String.format("%.3f", c.convert(bytesSentPerSecond) / pollRate);
-            String receivedString = String.format("%.3f", c.convert(bytesReceivedPerSecond) / pollRate);
+            String sentString = String.format("%.3f", c.convert(bytesSentPerSecond) / correctedPollRate);
+            String receivedString = String.format("%.3f", c.convert(bytesReceivedPerSecond) / correctedPollRate);
 
 
             widgetTextViewLineOneText += unitMeasurement + "\n";
