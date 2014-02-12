@@ -15,10 +15,10 @@ public class SettingsFragment extends PreferenceFragment{
 	
 	ListPreference notificationDrawerUnitOfMeasurePreference;
     CheckBoxPreference disableCheckBoxPreference;
-
     ListPreference pollRatePreference;
     CheckBoxPreference activeAppPreference;
-	@Override
+
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);

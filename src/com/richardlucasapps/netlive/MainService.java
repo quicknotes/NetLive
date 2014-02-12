@@ -6,7 +6,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -25,58 +24,44 @@ import android.preference.PreferenceManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-
 import android.util.Log;
 import android.widget.RemoteViews;
 
-
-/*TODO perhaps disable when screen is off using a broadcast receiver, depending on how much battery this ish uses, though may be a good idea to do this regardless
-
-*/
 public class MainService extends Service {
 
     private final ScheduledExecutorService scheduler =
             Executors.newScheduledThreadPool(1);
 
-	private Long bytesSentSinceBoot;
-	private Long bytesReceivedSinceBoot;
+    private Long bytesSentSinceBoot;
+    private Long bytesReceivedSinceBoot;
 
-	private Long previousBytesSentSinceBoot;
-	private Long previousBytesReceivedSinceBoot;
+    private Long previousBytesSentSinceBoot;
+    private Long previousBytesReceivedSinceBoot;
 
-	private Long bytesSentPerSecond;
-	private Long bytesReceivedPerSecond;
+    private Long bytesSentPerSecond;
+    private Long bytesReceivedPerSecond;
 
     private String sentString;
-	private String receivedString;
+    private String receivedString;
 
-	private String activeApp ="";
-	List<AppDataUsage> appDataUsageList;
-	int appMonitorCounter;
+    private String activeApp = "";
+    List<AppDataUsage> appDataUsageList;
+    int appMonitorCounter;
 
     private static boolean widgetExist;
 
+    int mId;
 
+    NotificationCompat.Builder mBuilder;
+    NotificationManager mNotifyMgr;
+    Notification notification;
+    SharedPreferences sharedPref;
 
-
-
-    //Handler mHandler;
-
-	int mId;
-
-	NotificationCompat.Builder mBuilder;
-	NotificationManager mNotifyMgr;
-	Notification notification;
-	SharedPreferences sharedPref;
-
-
-    ScheduledFuture beeperHandle;
+    ScheduledFuture updateHandler;
     Intent resultIntent;
 
     Context context;
     ComponentName name;
-
-   //final ScheduledFuture beeperHandle = null;
 
     UnitConverter converter;
     long pollRate;
@@ -85,91 +70,100 @@ public class MainService extends Service {
     String displayValuesText = "";
     String unitMeasurement;
     boolean showActiveApp;
-    String contentTitleText="";
+    String contentTitleText = "";
 
     ActiveAppGetter activeAppGetter;
 
     PowerManager pm;
-    //UidDataGetter uidDataGetter;
+    boolean autoStart;
 
+    List<UnitConverter> widgetUnitMeasurementConverters;
+    List<RemoteViews> widgetRemoteViews;
+
+    int[] ids;
+    AppWidgetManager manager;
+
+    int N;
 
     @Override
-    public void onDestroy(){
-        try {
-            beeperHandle.cancel(true);
-        } catch (NullPointerException e) {
-            //The only way there will be a null pointer, is if the disabled preference is checked.  Because if it is, onDestory is called right away, without creating the beeperHandle
-        }
-        super.onDestroy();
+    public void onCreate() {
+        pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-    }
+        autoStart = !(sharedPref.getBoolean("pref_key_auto_start", false));
+        widgetExist = sharedPref.getBoolean("widget_exists", false);
 
-	@Override
-	public void onCreate() {
-        pm                              = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        sharedPref                      = PreferenceManager.getDefaultSharedPreferences(this);
+        if (autoStart || widgetExist) {
 
-        if(sharedPref.getBoolean("pref_key_auto_start", false)){
-            onDestroy();
+        } else {//if the app is disabled and there are no widgets, it will simply destory itself.
+            this.onDestroy();
             return;
         }
 
-        widgetExist                     = checkIfWidgetExist();
+        unitMeasurement = sharedPref.getString("pref_key_measurement_unit", "Mbps");
+        pollRate = Long.parseLong(sharedPref.getString("pref_key_poll_rate", "1"));
+        showActiveApp = sharedPref.getBoolean("pref_key_active_app", true);
 
+        converter = getUnitConverter(unitMeasurement);
+        titleSetter = getNotificationContentTitleSetter(showActiveApp);
+        context = getApplicationContext();
 
+        appMonitorCounter = 0;
 
-        unitMeasurement                 = sharedPref.getString("pref_key_measurement_unit", "Mbps");
-        pollRate                        = Long.parseLong(sharedPref.getString("pref_key_poll_rate", "1"));
-        showActiveApp                   = sharedPref.getBoolean("pref_key_active_app", true);
-
-        converter                       = getUnitConverter(unitMeasurement);
-        titleSetter                     = getNotificationContentTitleSetter(showActiveApp);
-        context                         = getApplicationContext();
-        name                            = new ComponentName(context, NetworkSpeedWidget.class);
-
-        appMonitorCounter               = 0;
-
-
-        previousBytesSentSinceBoot      = 0L;
-        previousBytesReceivedSinceBoot  = 0L;
-        appDataUsageList                = new ArrayList<AppDataUsage>();
+        previousBytesSentSinceBoot = 0L;
+        previousBytesReceivedSinceBoot = 0L;
+        appDataUsageList = new ArrayList<AppDataUsage>();
 
         loadAllAppsIntoAppDataUsageList();
-        activeAppGetter                 = determineUidDataGatherMethod();
+        activeAppGetter = determineUidDataGatherMethod();
+
+        if (widgetExist) {
+            setupWidgets();
+        }
+
+        if (autoStart) {
+            mNotifyMgr =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            mId = 1;
+            mBuilder = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.idle)
+                    .setContentTitle("")
+                    .setContentText("")
+                    .setPriority(Notification.PRIORITY_HIGH)
+                    .setOngoing(true);
+
+            resultIntent = new Intent(this, MainActivity.class);
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            stackBuilder.addParentStack(MainActivity.class);
+            stackBuilder.addNextIntent(resultIntent);
+            PendingIntent resultPendingIntent =
+                    stackBuilder.getPendingIntent(
+                            0,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+            mBuilder.setContentIntent(resultPendingIntent);
 
 
-        mNotifyMgr =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mId = 1;
-        mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.idle) //R.drawable.ic_launcher
-                .setContentTitle("")
-                .setContentText("")
-                .setPriority(Notification.PRIORITY_HIGH)
-                .setOngoing(true);
-
-        resultIntent = new Intent(this, MainActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(MainActivity.class);
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mBuilder.setContentIntent(resultPendingIntent);
+            notification = mBuilder.build();
 
 
-        notification = mBuilder.build();
+            mNotifyMgr.notify(
+                    mId,
+                    notification);
 
+            startForeground(mId, notification);
+        }
+        if (autoStart && !widgetExist) {
+            startOnlyNotifcationEnabledService(pollRate);
+        }
 
-        mNotifyMgr.notify(
-                mId,
-                notification);
+        if (autoStart && widgetExist) {
+            startNotifcationAndWidgetEnabledService(pollRate);
+        }
 
-        startForeground(mId, notification);
-
-        beepForAnHour(pollRate);
+        if (!autoStart && widgetExist) {
+            startOnlyWidgetEnabledService(pollRate);
+        }
         super.onCreate();
     }
 
@@ -177,16 +171,27 @@ public class MainService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+    @Override
+    public void onDestroy() {
+        try {
+            updateHandler.cancel(true);
+        } catch (NullPointerException e) {
+            //The only way there will be a null pointer, is if the disabled preference is checked.  Because if it is, onDestory() is called right away, without creating the updateHandler
+        }
+        this.stopSelf();
+        super.onDestroy();
 
-    private ActiveAppGetter determineUidDataGatherMethod(){
+    }
+
+    private ActiveAppGetter determineUidDataGatherMethod() {
         //TODO I think I will have to maintain that useTrafficStatsAPI boolean from this class.  And simply separtate the methods within app data usage and call them accordingly
 
-        long bytesTransferred      = 0L;
+        long bytesTransferred = 0L;
 
-        for(AppDataUsage currentApp : appDataUsageList){
+        for (AppDataUsage currentApp : appDataUsageList) {
             int uid = currentApp.getUid();
             bytesTransferred = TrafficStats.getUidRxBytes(uid) + TrafficStats.getUidTxBytes(uid);
-            if(bytesTransferred > 0){
+            if (bytesTransferred > 0) {
                 return setUidDataGatherMethodToTrafficStatsAPI(true);//TODO Change to True
 
             }
@@ -196,38 +201,38 @@ public class MainService extends Service {
 
     }
 
-    private ActiveAppGetter setUidDataGatherMethodToTrafficStatsAPI(boolean b){
-        if(b){
+    private ActiveAppGetter setUidDataGatherMethodToTrafficStatsAPI(boolean b) {
+        if (b) {
 
             return (new ActiveAppGetter() {
                 @Override
                 public String getActiveApp() {
-                    Log.d("setUidDataGatherMethodToTrafficStatsAPI", "traffic stats API");
-                    long maxDelta   = 0L;
-                    long delta      = 0L;
+
+                    long maxDelta = 0L;
+                    long delta = 0L;
                     String appLabel = "";
 
-                    for(AppDataUsage currentApp : appDataUsageList){
+                    for (AppDataUsage currentApp : appDataUsageList) {
                         delta = currentApp.getRateWithTrafficStatsAPI();
 
-                        if(delta > maxDelta){
+                        if (delta > maxDelta) {
                             appLabel = currentApp.getAppName();
                             maxDelta = delta;
                         }
                     }
-                    if(appLabel == ""){
+                    if (appLabel == "") {
                         return "...";
                     }
                     return appLabel;
 
                 }
             });
-        }else{
+        } else {
 
             return (new ActiveAppGetter() {
                 @Override
                 public String getActiveApp() {
-                    Log.d("setUidDataGatherMethodToTrafficStatsAPI", "MANUAL");
+
                     long maxDelta = 0L;
                     long delta = 0L;
                     String appLabel = "";
@@ -347,47 +352,64 @@ public class MainService extends Service {
 
     }
 
-    public void beepForAnHour(long pollRate) {
+    public void startOnlyNotifcationEnabledService(long pollRate) {
         final Runnable beeper = new Runnable() {
-            public void run() { update(); }
+            public void run() {
+                updateOnlyNotificationEnabled();
+            }
         };
-        beeperHandle =
+        updateHandler =
                 scheduler.scheduleAtFixedRate(beeper, 1, pollRate, TimeUnit.SECONDS);
+    }
 
+    public void startNotifcationAndWidgetEnabledService(long pollRate) {
+        final Runnable beeper = new Runnable() {
+            public void run() {
+                updateNotificationAndWidgetEnabled();
+            }
+        };
+        updateHandler =
+                scheduler.scheduleAtFixedRate(beeper, 1, pollRate, TimeUnit.SECONDS);
+    }
+
+    public void startOnlyWidgetEnabledService(long pollRate) {
+        final Runnable beeper = new Runnable() {
+            public void run() {
+                updateOnlyWidgetEnabled();
+            }
+        };
+        updateHandler =
+                scheduler.scheduleAtFixedRate(beeper, 1, pollRate, TimeUnit.SECONDS);
     }
 
 
-	
-	private void update(){
-        if(!pm.isScreenOn()){//TODO a snazier thing might be to do a broadcast receiver that pauses the schedule executor service when screen is off, and renables when screen on.
+    private void updateOnlyNotificationEnabled() {
+        if (!pm.isScreenOn()) {//TODO a snazier thing might be to do a broadcast receiver that pauses the schedule executor service when screen is off, and renables when screen on.
             return;          //I don't think cancelling the service all together would be a good idea when screen is off, I don't want to keep calling onCreate when the user turns their screen on
         }
 
-        Log.d("Update", "Run");
+        bytesSentSinceBoot = TrafficStats.getTotalTxBytes();
+        bytesReceivedSinceBoot = TrafficStats.getTotalRxBytes();
 
+        bytesSentPerSecond = bytesSentSinceBoot - previousBytesSentSinceBoot;
+        bytesReceivedPerSecond = bytesReceivedSinceBoot - previousBytesReceivedSinceBoot;
 
-        bytesSentSinceBoot              = TrafficStats.getTotalTxBytes();
-        bytesReceivedSinceBoot          = TrafficStats.getTotalRxBytes();
+        sentString = String.format("%.3f", converter.convert(bytesSentPerSecond) / pollRate);
+        receivedString = String.format("%.3f", converter.convert(bytesReceivedPerSecond) / pollRate);
 
-        bytesSentPerSecond              = bytesSentSinceBoot - previousBytesSentSinceBoot;
-        bytesReceivedPerSecond          = bytesReceivedSinceBoot - previousBytesReceivedSinceBoot;
+        previousBytesSentSinceBoot = bytesSentSinceBoot;
+        previousBytesReceivedSinceBoot = bytesReceivedSinceBoot;
 
-        sentString                      = String.format("%.3f", converter.convert(bytesSentPerSecond)/pollRate);
-        receivedString                  = String.format("%.3f", converter.convert(bytesReceivedPerSecond)/pollRate);
-
-        previousBytesSentSinceBoot      = bytesSentSinceBoot;
-        previousBytesReceivedSinceBoot  = bytesReceivedSinceBoot;
-        
-        appMonitorCounter+=1;
-        if(appMonitorCounter >=500/pollRate){//divide by pollRate so that if you have a pollRate of 10, that will end up being 500 seconds, not 5000
+        appMonitorCounter += 1;
+        if (appMonitorCounter >= 500 / pollRate) {//divide by pollRate so that if you have a pollRate of 10, that will end up being 500 seconds, not 5000
             loadAllAppsIntoAppDataUsageList();
-        	appMonitorCounter = 0;
+            appMonitorCounter = 0;
         }
 
-        displayValuesText               = " Up: " + sentString +  " Down: " +  receivedString;
-        activeApp                       = titleSetter.set();
-    	contentTitleText                = unitMeasurement + " " + activeApp;
-    	
+        displayValuesText = " Up: " + sentString + " Down: " + receivedString;
+        activeApp = titleSetter.set();
+        contentTitleText = unitMeasurement + " " + activeApp;
+
         mBuilder.setContentText(displayValuesText);
         mBuilder.setContentTitle(contentTitleText);
 
@@ -404,140 +426,241 @@ public class MainService extends Service {
         mBuilder.setContentIntent(resultPendingIntent);
 
 
-        //mBuilder.setPriority(Notification.PRIORITY_MIN);//just added these two
-        //mBuilder.setOngoing(true);//just added these two
+        mBuilder.setWhen(System.currentTimeMillis());
 
 
-       mBuilder.setWhen(System.currentTimeMillis());
-//        Intent resultIntent = new Intent(this, MainActivity.class);
-//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-//        stackBuilder.addParentStack(MainActivity.class);
-//        stackBuilder.addNextIntent(resultIntent);
-//        PendingIntent resultPendingIntent =
-//                stackBuilder.getPendingIntent(
-//                    0,
-//                    PendingIntent.FLAG_UPDATE_CURRENT
-//                );
-//        mBuilder.setContentIntent(resultPendingIntent);
-
-
-        if(widgetExist){
-            updateWidgets();
-        }
-
-
-        if(bytesSentPerSecond/pollRate<13107 && bytesReceivedPerSecond/pollRate<13107){
+        if (bytesSentPerSecond / pollRate < 13107 && bytesReceivedPerSecond / pollRate < 13107) {
             mBuilder.setSmallIcon(R.drawable.idle);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-        if(!(bytesSentPerSecond/pollRate>13107) && bytesReceivedPerSecond/pollRate>13107){
+        if (!(bytesSentPerSecond / pollRate > 13107) && bytesReceivedPerSecond / pollRate > 13107) {
             mBuilder.setSmallIcon(R.drawable.download);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-        if(bytesSentPerSecond/pollRate>13107 && bytesReceivedPerSecond/pollRate<13107){
+        if (bytesSentPerSecond / pollRate > 13107 && bytesReceivedPerSecond / pollRate < 13107) {
             mBuilder.setSmallIcon(R.drawable.upload);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-        if(bytesSentPerSecond/pollRate>13107 && bytesReceivedPerSecond/pollRate>13107){//1307 bytes is equal to .1Mbit
+        if (bytesSentPerSecond / pollRate > 13107 && bytesReceivedPerSecond / pollRate > 13107) {//1307 bytes is equal to .1Mbit
             mBuilder.setSmallIcon(R.drawable.both);
             mNotifyMgr.notify(mId, mBuilder.build());
             return;
         }
 
-
-
-
-        //mNotifyMgr.notify(mId, mBuilder.build());
-
     }
 
-
-private void loadAllAppsIntoAppDataUsageList(){
-    PackageManager packageManager=this.getPackageManager();
-    List<ApplicationInfo> appList=packageManager.getInstalledApplications(0);
-
-    for (ApplicationInfo appInfo : appList) {
-        String appLabel = (String) packageManager.getApplicationLabel(appInfo);
-        int uid = appInfo.uid;
-        AppDataUsage app = new AppDataUsage(appLabel, uid);
-        appDataUsageList.add(app);
-
-    }
-}
-
-
-/*TODO
-    Talk to commonsware dude in fireside chat.  Ask what the most efficient way to update widgets is.  There could be several of them and I keep doing shit like setcolor each update, even though it doesn't change
-*/
-
-    //TODO I AM AN IDIOT.  Wait, maybe not.  I have these four bullshit text views.  Maybe I can simply use '\n', so still have only one text view, just append lines that way
-
-    public static void setWidgetExist(boolean b){
-        widgetExist = b;
+    private void updateOnlyWidgetEnabled() {
+        updateWidgets();
     }
 
-    private boolean checkIfWidgetExist(){
-        try {
-            int[] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(name);
-        } catch (NullPointerException e) {
-            return false;
+    private void updateNotificationAndWidgetEnabled() {
+
+        if (!pm.isScreenOn()) {
+            return;
         }
-        int[] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(name);
-        if (ids.length > 0) {
-            return true;
+
+        bytesSentSinceBoot = TrafficStats.getTotalTxBytes();
+        bytesReceivedSinceBoot = TrafficStats.getTotalRxBytes();
+
+        bytesSentPerSecond = bytesSentSinceBoot - previousBytesSentSinceBoot;
+        bytesReceivedPerSecond = bytesReceivedSinceBoot - previousBytesReceivedSinceBoot;
+
+        sentString = String.format("%.3f", converter.convert(bytesSentPerSecond) / pollRate);
+        receivedString = String.format("%.3f", converter.convert(bytesReceivedPerSecond) / pollRate);
+
+        previousBytesSentSinceBoot = bytesSentSinceBoot;
+        previousBytesReceivedSinceBoot = bytesReceivedSinceBoot;
+
+        appMonitorCounter += 1;
+        if (appMonitorCounter >= 500 / pollRate) {//divide by pollRate so that if you have a pollRate of 10, that will end up being 500 seconds, not 5000
+            loadAllAppsIntoAppDataUsageList();
+            appMonitorCounter = 0;
         }
-        return false;
 
-    }
+        displayValuesText = " Up: " + sentString + " Down: " + receivedString;
+        activeApp = titleSetter.set();
+        contentTitleText = unitMeasurement + " " + activeApp;
 
-    private void updateWidgets(){
-        int [] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(name);
-        AppWidgetManager manager = AppWidgetManager.getInstance(this);
+        mBuilder.setContentText(displayValuesText);
+        mBuilder.setContentTitle(contentTitleText);
 
-        final int N = ids.length;
 
-        Log.d("Before", "For Loop");
-        for (int i = 0; i < N; i++){
-            Log.d("In", "for loop");
+        resultIntent = new Intent(this, MainActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
+
+
+        mBuilder.setWhen(System.currentTimeMillis());
+
+
+        for (int i = 0; i < N; i++) {
             int awID = ids[i];
 
             boolean displayActiveApp = sharedPref.getBoolean("pref_key_widget_active_app" + awID, true);
-            String colorOfFont = sharedPref.getString("pref_key_widget_font_color" + awID, "Black");
-            String sizeOfFont = sharedPref.getString("pref_key_widget_font_size" + awID, "12.0");
 
             String widgetTextViewLineOneText = "";
-
-            int widgetColor;
-            widgetColor = Color.parseColor(colorOfFont);
 
             if (displayActiveApp) {
                 widgetTextViewLineOneText = activeApp + "\n";
             }
 
+            UnitConverter c = widgetUnitMeasurementConverters.get(i);
 
-            widgetTextViewLineOneText+= unitMeasurement+"\n";
-            widgetTextViewLineOneText+= "Up: "+sentString +"\n";
-            widgetTextViewLineOneText+= "Down: "+receivedString +"\n";
+            String sentString = String.format("%.3f", c.convert(bytesSentPerSecond) / pollRate);
+            String receivedString = String.format("%.3f", c.convert(bytesReceivedPerSecond) / pollRate);
 
+            widgetTextViewLineOneText += unitMeasurement + "\n";
+            widgetTextViewLineOneText += "Up: " + sentString + "\n";
+            widgetTextViewLineOneText += "Down: " + receivedString + "\n";
+
+            RemoteViews v = widgetRemoteViews.get(i);
+            v.setTextViewText(R.id.widgetTextViewLineOne, widgetTextViewLineOneText);
+            manager.updateAppWidget(awID, v);
+
+        }
+
+
+        if (bytesSentPerSecond / pollRate < 13107 && bytesReceivedPerSecond / pollRate < 13107) {
+            mBuilder.setSmallIcon(R.drawable.idle);
+            mNotifyMgr.notify(mId, mBuilder.build());
+            return;
+        }
+
+        if (!(bytesSentPerSecond / pollRate > 13107) && bytesReceivedPerSecond / pollRate > 13107) {
+            mBuilder.setSmallIcon(R.drawable.download);
+            mNotifyMgr.notify(mId, mBuilder.build());
+            return;
+        }
+
+        if (bytesSentPerSecond / pollRate > 13107 && bytesReceivedPerSecond / pollRate < 13107) {
+            mBuilder.setSmallIcon(R.drawable.upload);
+            mNotifyMgr.notify(mId, mBuilder.build());
+            return;
+        }
+
+        if (bytesSentPerSecond / pollRate > 13107 && bytesReceivedPerSecond / pollRate > 13107) {//1307 bytes is equal to .1Mbit
+            mBuilder.setSmallIcon(R.drawable.both);
+            mNotifyMgr.notify(mId, mBuilder.build());
+            return;
+        }
+
+    }
+
+    private void setupWidgets() {
+
+        name = new ComponentName(context, NetworkSpeedWidget.class);
+        ids = AppWidgetManager.getInstance(context).getAppWidgetIds(name);
+        manager = AppWidgetManager.getInstance(this);
+
+
+        widgetUnitMeasurementConverters = new ArrayList<UnitConverter>();
+        widgetRemoteViews = new ArrayList<RemoteViews>();
+
+        N = ids.length;
+
+        for (int i = 0; i < N; i++) {
+            int awID = ids[i];
+
+            String colorOfFont = sharedPref.getString("pref_key_widget_font_color" + awID, "Black");
+            String sizeOfFont = sharedPref.getString("pref_key_widget_font_size" + awID, "12.0");
+            String measurementUnit = sharedPref.getString("pref_key_widget_measurement_unit" + awID, "Mbps");
+
+            int widgetColor;
+            widgetColor = Color.parseColor(colorOfFont);
 
 
             RemoteViews v = new RemoteViews(getPackageName(), R.layout.widget);
-
-            v.setTextViewText(R.id.widgetTextViewLineOne, widgetTextViewLineOneText);
-
             v.setTextColor(R.id.widgetTextViewLineOne, widgetColor);
-
-
             Float tempFloat = Float.parseFloat(sizeOfFont);
-
             v.setFloat(R.id.widgetTextViewLineOne, "setTextSize", tempFloat);
 
+            widgetRemoteViews.add(v);
+            UnitConverter converter = getUnitConverter(measurementUnit);
+            widgetUnitMeasurementConverters.add(converter);
+
+
+        }
+        return;
+    }
+
+
+    private void loadAllAppsIntoAppDataUsageList() {
+        PackageManager packageManager = this.getPackageManager();
+        List<ApplicationInfo> appList = packageManager.getInstalledApplications(0);
+
+        for (ApplicationInfo appInfo : appList) {
+            String appLabel = (String) packageManager.getApplicationLabel(appInfo);
+            int uid = appInfo.uid;
+            AppDataUsage app = new AppDataUsage(appLabel, uid);
+            appDataUsageList.add(app);
+
+        }
+    }
+
+
+    private void updateWidgets() {
+
+        if (!pm.isScreenOn()) {
+            return;
+        }
+
+        bytesSentSinceBoot = TrafficStats.getTotalTxBytes();
+        bytesReceivedSinceBoot = TrafficStats.getTotalRxBytes();
+
+        bytesSentPerSecond = bytesSentSinceBoot - previousBytesSentSinceBoot;
+        bytesReceivedPerSecond = bytesReceivedSinceBoot - previousBytesReceivedSinceBoot;
+
+        sentString = String.format("%.3f", converter.convert(bytesSentPerSecond) / pollRate);
+        receivedString = String.format("%.3f", converter.convert(bytesReceivedPerSecond) / pollRate);
+
+        previousBytesSentSinceBoot = bytesSentSinceBoot;
+        previousBytesReceivedSinceBoot = bytesReceivedSinceBoot;
+
+        appMonitorCounter += 1;
+        if (appMonitorCounter >= 500 / pollRate) {//divide by pollRate so that if you have a pollRate of 10, that will end up being 500 seconds, not 5000
+            loadAllAppsIntoAppDataUsageList();
+            appMonitorCounter = 0;
+        }
+
+        activeApp = titleSetter.set();
+
+        for (int i = 0; i < N; i++) {
+            int awID = ids[i];
+
+            boolean displayActiveApp = sharedPref.getBoolean("pref_key_widget_active_app" + awID, true);
+
+
+            String widgetTextViewLineOneText = "";
+
+            if (displayActiveApp) {
+                widgetTextViewLineOneText = activeApp + "\n";
+            }
+
+            UnitConverter c = widgetUnitMeasurementConverters.get(i);
+
+            String sentString = String.format("%.3f", c.convert(bytesSentPerSecond) / pollRate);
+            String receivedString = String.format("%.3f", c.convert(bytesReceivedPerSecond) / pollRate);
+
+
+            widgetTextViewLineOneText += unitMeasurement + "\n";
+            widgetTextViewLineOneText += "Up: " + sentString + "\n";
+            widgetTextViewLineOneText += "Down: " + receivedString + "\n";
+
+            RemoteViews v = widgetRemoteViews.get(i);
+            v.setTextViewText(R.id.widgetTextViewLineOne, widgetTextViewLineOneText);
             manager.updateAppWidget(awID, v);
 
         }

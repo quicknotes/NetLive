@@ -5,14 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-    	SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-    	boolean syncConnPref = sharedPref.getBoolean("pref_key_auto_start", false);
-    	
-    	if(syncConnPref == false){
+        //this will always autostart and at least check if notification or widget enabled, if not, it destroys
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MyApplication.getInstance());
+        boolean widgetExist = sharedPref.getBoolean("widget_exists", false);
+        boolean autoStart = !(sharedPref.getBoolean("pref_key_auto_start", false));
+
+        Log.d("netlive", String.valueOf(widgetExist)+String.valueOf(autoStart));
+        if(widgetExist || autoStart){
+            Log.d("netlive", String.valueOf(widgetExist)+String.valueOf(autoStart));
     		 Intent startServiceIntent = new Intent(context, MainService.class);
     	     context.startService(startServiceIntent);
     	}

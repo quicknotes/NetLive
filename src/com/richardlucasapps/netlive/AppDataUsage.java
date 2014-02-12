@@ -58,7 +58,10 @@ public class AppDataUsage {
         return this.uId;
     }
 
-    //TODO, what might be chay is if I try the getUIDbytes natural way, and if that shit returns 0, then I can getTotalBytesManual
+    /*
+    http://developer.android.com/reference/android/net/TrafficStats.html#getUidRxPackets(int)
+    I need this manual function because "Before JELLY_BEAN_MR2, this may return UNSUPPORTED on devices where statistics aren't available."
+     */
 	public Long getTotalBytesManual(){
 
         File dir                    = new File(uidStatPath);
@@ -86,8 +89,6 @@ public class AppDataUsage {
         }
         return Long.valueOf(textReceived).longValue() + Long.valueOf(textSent).longValue();
 
-        //Log.d("uidBytesValues", String.valueOf(TrafficStats.getUidRxBytes(localUid)) + "  " + String.valueOf(TrafficStats.getUidTxBytes(localUid)));
-        //return Long.valueOf(TrafficStats.getUidRxBytes(localUid)) + Long.valueOf(TrafficStats.getUidTxBytes(localUid));
     }
 
    public Long getStatsWithAPI(){

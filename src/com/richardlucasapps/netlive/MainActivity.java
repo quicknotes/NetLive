@@ -24,7 +24,6 @@ import com.richardlucasapps.netlive.R;
 public class MainActivity extends Activity {
 
     MyApplication app;
-    SharedPreferences.Editor edit;
 
     SharedPreferences sharedPref;
 //TODO externalize the strings in this activity, show some class*
@@ -39,40 +38,32 @@ public class MainActivity extends Activity {
 
         app = new MyApplication();
         sharedPref = PreferenceManager.getDefaultSharedPreferences(app.getInstance());
-        boolean disabled = sharedPref.getBoolean("pref_key_auto_start", false);
 
-        if(!disabled){
-        
         Intent intent = new Intent(this, MainService.class);
         startService(intent);
-        }
 
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		
-		boolean firstrun = getSharedPreferences("START_UP_PREFERENCE", MODE_PRIVATE).getBoolean("firstrun", true);
+		boolean firstRun = getSharedPreferences("START_UP_PREFERENCE", MODE_PRIVATE).getBoolean("firstRun", true);
 
 
-		 if (firstrun){
+		 if (firstRun){
 			 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			 builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
 		               // User clicked OK button
 		           }
 		       });
-			 builder.setMessage("Thank you for using my app.\n\nIf you have any questions, recommendations, or you run into" +
-			 		" a problem with the app, please do not hesititate to contact me" +
-			 		" by going to the \"Send Feedback\" option in the menu.  Enjoy!")
+			 builder.setMessage(getString(R.string.welcome))
 		       .setTitle("Welcome to NetLive");
 			 AlertDialog dialog = builder.create();
 			 
 			 AlertDialog newFragment = dialog;
 			 newFragment.show();
 
-             //MyApplication.getInstance().clearApplicationData();//This will delete the data from the
-
              getSharedPreferences("START_UP_PREFERENCE", MODE_PRIVATE)
 		        .edit()
-		        .putBoolean("firstrun", false)
+		        .putBoolean("firstRun", false)
 		        .commit();
 			    
 		 }
@@ -122,7 +113,7 @@ public class MainActivity extends Activity {
 	private void showAboutDialog() {
 		 AlertDialog.Builder aboutBuilder = new AlertDialog.Builder(this);
 		 TextView myMsg = new TextView(this);
-		 SpannableString s = new SpannableString("NetLive v2.5 Beta\n\nrichardlucasapps.com");
+		 SpannableString s = new SpannableString("NetLive v2.6 Beta\n\nrichardlucasapps.com");
 		 Linkify.addLinks(s, Linkify.WEB_URLS);
 		 myMsg.setText(s);
 		 myMsg.setTextSize(15);
@@ -146,18 +137,12 @@ public class MainActivity extends Activity {
 
 	private void showHelpDialog() {
 		 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		 //TextView myMsg = new TextView(this);
-		String s = "Thank you for using my app.\n\nIf you have any questions, recommendations, or you run into" +
-			 		" a problem with the app, please do not hesitate to contact me" +
-			 		" by going to the \"Send Feedback\" option in the menu.";
+		String s = getString(R.string.help_dialog_para_1);
 		
 		String overviewTitle = "Overview";
-		String overviewContent = "NetLive allows you to monitor your internet data transfer rate while also showing the app that is using the most data at the " +
-                "current moment. It runs both in the notification drawer or as a widget, so you always have access to your transfer rate information. It does all " +
-                "of this without using even 1% of your battery.";
+		String overviewContent = getString(R.string.help_dialog_para_2);
 
-		String si =  "NetLive uses the official International System of Units (SI). " +
-				"This means, for example, that a kilobit is considered 1000 bits, not 1024 bits.";
+		String si =   getString(R.string.help_dialog_para_3);;
 		
 		LayoutInflater inflater= LayoutInflater.from(this);
 		View view=inflater.inflate(R.layout.help_dialog, null);

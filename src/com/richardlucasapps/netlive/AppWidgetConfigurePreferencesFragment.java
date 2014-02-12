@@ -41,8 +41,7 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		
-		widgetPreferencePaneOpen = true;
+
 		
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.widget_preference);
@@ -69,10 +68,7 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 		widgetFontSize.setSummary(widgetFontSize.getEntry().toString());
 		
 	}
-	
-	public static boolean isWidgetPreferencePaneOpen() {
-		return widgetPreferencePaneOpen;
-	}
+
 	
 	private OnPreferenceChangeListener widgetFontSizeListener = new OnPreferenceChangeListener(){
 
@@ -147,13 +143,16 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 			edit.putString("pref_key_widget_font_color"+mAppWidgetId, colorOfFont);
 			//edit.putString("pref_key_widget_font_color_edit_text"+mAppWidgetId, customColorOfFont);
 			
-			
+			//TODO This is where I need to add the widget exist shit
+            edit.putBoolean("widget_exists",true);
 			edit.commit();
 			Intent result = new Intent();
 			result.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
 			getActivity().setResult(getActivity().RESULT_OK, result);
 			getActivity().finish();
-			widgetPreferencePaneOpen = false;
+            MyApplication.getInstance().stopService(new Intent(MyApplication.getInstance(),MainService.class));
+            MyApplication.getInstance().startService(new Intent(MyApplication.getInstance(), MainService.class));
+
 			return false;
 		}
 
