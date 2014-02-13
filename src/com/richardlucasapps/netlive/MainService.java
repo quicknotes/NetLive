@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.TrafficStats;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
@@ -134,8 +135,14 @@ public class MainService extends Service {
                     .setSmallIcon(R.drawable.idle)
                     .setContentTitle("")
                     .setContentText("")
-                    .setPriority(Notification.PRIORITY_HIGH)
                     .setOngoing(true);
+
+            if(Integer.valueOf(android.os.Build.VERSION.SDK_INT)>15){//not sure if this is needed, but Notification.PRIORITY_HIGH is only compatible with version above ice cream sandwich
+                Log.d("netlive", "inside sdk for loop");
+                mBuilder.setPriority(Notification.PRIORITY_HIGH);
+            }
+
+
 
             resultIntent = new Intent(this, MainActivity.class);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
