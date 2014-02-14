@@ -8,6 +8,7 @@
     android:initialLayout="@layout/widget"
     android:minResizeHeight="25dp"
     android:minResizeWidth="25dp"
+    android:widgetCategory="keyguard|home_screen"
     android:resizeMode="horizontal|vertical">
     <!--Though the update period is set to 1000 miliseconds here, which is one second,
          Android only allows you to update the widget a max of once every 15 minutes.
