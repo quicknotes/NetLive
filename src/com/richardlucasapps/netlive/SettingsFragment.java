@@ -17,6 +17,8 @@ public class SettingsFragment extends PreferenceFragment{
     CheckBoxPreference disableCheckBoxPreference;
     ListPreference pollRatePreference;
     CheckBoxPreference activeAppPreference;
+    CheckBoxPreference showTotalValuePreference;
+    CheckBoxPreference hideNotificationIconPreference;
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -28,11 +30,17 @@ public class SettingsFragment extends PreferenceFragment{
 		notificationDrawerUnitOfMeasurePreference.setOnPreferenceChangeListener(notificationDrawerUnitOfMeasurePreferenceListener);
 		notificationDrawerUnitOfMeasurePreference.setSummary(notificationDrawerUnitOfMeasurePreference.getValue().toString());
 
+        showTotalValuePreference = (CheckBoxPreference) findPreference("pref_key_show_total_value");
+        showTotalValuePreference.setOnPreferenceChangeListener(showTotalValuePreferenceListener);
+
         pollRatePreference = (ListPreference) findPreference("pref_key_poll_rate");
         pollRatePreference.setOnPreferenceChangeListener(pollRatePreferenceListener);
 
         activeAppPreference = (CheckBoxPreference) findPreference("pref_key_active_app");
         activeAppPreference.setOnPreferenceChangeListener(activeAppPreferenceListener);
+
+        hideNotificationIconPreference = (CheckBoxPreference) findPreference("pref_key_hide_notification");
+        hideNotificationIconPreference.setOnPreferenceChangeListener(hideNotificationIconPreferenceListener);
 
         disableCheckBoxPreference = (CheckBoxPreference) findPreference("pref_key_auto_start");
         disableCheckBoxPreference.setOnPreferenceChangeListener(disableCheckBoxPreferenceListener);
@@ -58,6 +66,21 @@ public class SettingsFragment extends PreferenceFragment{
 
     };
 
+    private OnPreferenceChangeListener showTotalValuePreferenceListener = new OnPreferenceChangeListener(){
+
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            ((CheckBoxPreference) preference).setChecked((Boolean)newValue);
+            getActivity().stopService(new Intent(getActivity(), MainService.class));
+            getActivity().startService(new Intent(getActivity(), MainService.class));
+
+
+            return false;
+        }
+
+
+    };
+
 
     private OnPreferenceChangeListener pollRatePreferenceListener = new OnPreferenceChangeListener(){
 
@@ -74,6 +97,21 @@ public class SettingsFragment extends PreferenceFragment{
     };
 
     private OnPreferenceChangeListener activeAppPreferenceListener = new OnPreferenceChangeListener(){
+
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            ((CheckBoxPreference) preference).setChecked((Boolean)newValue);
+            getActivity().stopService(new Intent(getActivity(), MainService.class));
+            getActivity().startService(new Intent(getActivity(), MainService.class));
+
+
+            return false;
+        }
+
+
+    };
+
+    private OnPreferenceChangeListener hideNotificationIconPreferenceListener = new OnPreferenceChangeListener(){
 
         @Override
         public boolean onPreferenceChange(Preference preference, Object newValue) {

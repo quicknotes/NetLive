@@ -1,87 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory 
-       		android:title="Add widget"
-        	android:key="pref_key_widget_add_widget_category">
-        	 <PreferenceScreen
-       			 android:key="pref_key_widget_add_widget_preference_screen"
-        		 android:title="Add widget"
-        		 />
-         </PreferenceCategory>
-    
-    
-    
-    <PreferenceCategory 
+    <PreferenceCategory
+        android:title="Add widget"
+        android:key="pref_key_widget_add_widget_category">
+        <PreferenceScreen
+            android:key="pref_key_widget_add_widget_preference_screen"
+            android:title="Add widget" />
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
         android:title="@string/pref_widget_category_general"
         android:key="pref_key_widget_category_general">
         <ListPreference
-        	android:key="pref_key_widget_measurement_unit"
-        	android:title="@string/pref_title_measurement_unit"
-       		android:summary="@string/pref_measurement_unit_summary"
-        	android:dialogTitle="@string/pref_dialog_title_choose_measurement_unit"
-        	android:entries="@array/pref_measurement_unit_entries"
-        	android:entryValues="@array/pref_measurement_unit_values"
-        	android:defaultValue="Mbps" />
+            android:key="pref_key_widget_measurement_unit"
+            android:title="@string/pref_title_measurement_unit"
+            android:summary="@string/pref_measurement_unit_summary"
+            android:dialogTitle="@string/pref_dialog_title_choose_measurement_unit"
+            android:entries="@array/pref_measurement_unit_entries"
+            android:entryValues="@array/pref_measurement_unit_values"
+            android:defaultValue="Mbps" />
 
-        <!--<ListPreference-->
-            <!--android:key="pref_key_widget_poll_rate"-->
-            <!--android:title="@string/pref_title_poll_rate"-->
-            <!--android:summary="@string/pref_summary_poll_rate"-->
-            <!--android:dialogTitle="@string/pref_dialog_title_poll_rate"-->
-            <!--android:entries="@array/pref_poll_rate_entries"-->
-            <!--android:entryValues="@array/pref_poll_rate_values"-->
-            <!--android:defaultValue="1" />-->
-        
-        <!--<CheckBoxPreference-->
-            <!--android:key="pref_key_widget_display_unit_of_measure"-->
-            <!--android:summary="@string/pref_widget_display_unit_of_measure_summary"-->
-            <!--android:title="@string/pref_widget_display_unit_of_measure_title"-->
-            <!--android:defaultValue="true" />-->
-        	
-        	<!--<CheckBoxPreference-->
-            <!--android:key="pref_key_widget_transfer_rate_names"-->
-            <!--android:summary="@string/pref_summary_transfer_rate_names"-->
-            <!--android:title="@string/pref_title_transfer_rate_names"-->
-            <!--android:defaultValue="true" />-->
-        	
-        	<CheckBoxPreference
+        <CheckBoxPreference
+            android:key="pref_key_widget_show_total"
+            android:summary="@string/pref_summary_show_total_value"
+            android:title="@string/pref_title_show_total_value"
+            android:defaultValue="true" />
+
+        <CheckBoxPreference
             android:key="pref_key_widget_active_app"
             android:summary="@string/pref_summary_active_app"
             android:title="@string/pref_title_active_app"
             android:defaultValue="true" />
-        	
-        	</PreferenceCategory>
-        	
-		<PreferenceCategory 
-       		android:title="@string/pref_widget_category_font"
-        	android:key="pref_key_widget_category_font">
 
-        	<ListPreference
-        	android:key="pref_key_widget_font_size"
-        	android:title="@string/pref_widget_title_font_size"
-       		android:summary="@string/pref_widget_summary_font_size"
-        	android:dialogTitle="@string/pref_widget_dialog_font_size"
-        	android:entries="@array/pref_widget_font_size_entries"
-        	android:entryValues="@array/pref_widget_font_size_values"
-        	android:defaultValue="12.0" />
-        	
-        	
-        	<ListPreference
-        	android:key="pref_key_widget_font_color"
-        	android:title="@string/pref_widget_title_font_color"
-       		android:summary="@string/pref_widget_summary_font_color"
-        	android:dialogTitle="@string/pref_widget_dialog_font_color"
-        	android:entries="@array/pref_widget_font_color_entries"
-        	android:entryValues="@array/pref_widget_font_color_values"
-        	android:defaultValue="white" />
-        	    
-        
-        </PreferenceCategory>
-        
-        	
-        	
- 
-    
-  
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_widget_category_font"
+        android:key="pref_key_widget_category_font">
+
+        <ListPreference
+            android:key="pref_key_widget_font_size"
+            android:title="@string/pref_widget_title_font_size"
+            android:summary="@string/pref_widget_summary_font_size"
+            android:dialogTitle="@string/pref_widget_dialog_font_size"
+            android:entries="@array/pref_widget_font_size_entries"
+            android:entryValues="@array/pref_widget_font_size_values"
+            android:defaultValue="12.0" />
+
+
+        <ListPreference
+            android:key="pref_key_widget_font_color"
+            android:title="@string/pref_widget_title_font_color"
+            android:summary="@string/pref_widget_summary_font_color"
+            android:dialogTitle="@string/pref_widget_dialog_font_color"
+            android:entries="@array/pref_widget_font_color_entries"
+            android:entryValues="@array/pref_widget_font_color_values"
+            android:defaultValue="white" />
+
+
+    </PreferenceCategory>
+
+
 </PreferenceScreen>

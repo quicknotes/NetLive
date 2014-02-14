@@ -25,16 +25,13 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 	
 	PreferenceScreen addWidgetPreference;
 	AppWidgetConfigure appWidgetConfigure;
-	EditTextPreference enterCustomColorPreference;
 	int mAppWidgetId;
 	boolean bool;
 	SharedPreferences sharedPref;
 	SharedPreferences.Editor edit;
-	
-	private static boolean widgetPreferencePaneOpen;
+
 
 	ListPreference widgetUnitOfMeasure;
-	ListPreference widgetFontStyle;
 	ListPreference widgetFontColor;
 	ListPreference widgetFontSize;
 	
@@ -53,7 +50,6 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 		
 		sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		edit = sharedPref.edit();
-		bool = sharedPref.getBoolean("pref_key_widget_display_unit_of_measure", false);
 		
 		widgetUnitOfMeasure = (ListPreference) findPreference("pref_key_widget_measurement_unit");
 		widgetUnitOfMeasure.setOnPreferenceChangeListener(widgetUnitOfMeasureListener);
@@ -117,15 +113,12 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 		public boolean onPreferenceClick(Preference arg0) {
 			
 			String unitOfMeasure = sharedPref.getString("pref_key_widget_measurement_unit", "Auto (bps, Kbps, Mbps, Gbps)");
-			//boolean displayUnitOfMeasure = sharedPref.getBoolean("pref_key_widget_display_unit_of_measure", true);
-//			boolean displayTotalValue = sharedPref.getBoolean("pref_key_widget_displayed_values_total", true);
-//			boolean displayUploadValue = sharedPref.getBoolean("pref_key_widget_displayed_values_upload", true);
-//			boolean displayDownloadValue = sharedPref.getBoolean("pref_key_widget_displayed_values_download", true);
-			boolean displayTransferRateLabels = sharedPref.getBoolean("pref_key_widget_transfer_rate_names", true);
+
 			boolean displayActiveApp = sharedPref.getBoolean("pref_key_widget_active_app", true);
 			String styleOfFont = sharedPref.getString("pref_key_widget_font_style", null);
 			String sizeOfFont = sharedPref.getString("pref_key_widget_font_size", null);
 			String colorOfFont = sharedPref.getString("pref_key_widget_font_color", null);
+            boolean showTotalValue = sharedPref.getBoolean("pref_key_widget_show_total", false);
 			
 			
 			edit.putString("pref_key_widget_measurement_unit"+mAppWidgetId, unitOfMeasure);
@@ -134,9 +127,9 @@ public class AppWidgetConfigurePreferencesFragment extends PreferenceFragment{
 //			edit.putBoolean("pref_key_widget_displayed_values_total"+mAppWidgetId, displayTotalValue);
 //			edit.putBoolean("pref_key_widget_displayed_values_upload"+mAppWidgetId, displayUploadValue);
 //			edit.putBoolean("pref_key_widget_displayed_values_download"+mAppWidgetId, displayDownloadValue);
-			
-			edit.putBoolean("pref_key_widget_transfer_rate_names"+mAppWidgetId, displayTransferRateLabels);
+
 			edit.putBoolean("pref_key_widget_active_app"+mAppWidgetId, displayActiveApp);
+            edit.putBoolean("pref_key_widget_show_total"+mAppWidgetId, showTotalValue);
 			
 			edit.putString("pref_key_widget_font_style"+mAppWidgetId, styleOfFont);
 			edit.putString("pref_key_widget_font_size"+mAppWidgetId, sizeOfFont);
