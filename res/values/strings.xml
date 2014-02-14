@@ -20,7 +20,7 @@
     <string name="pref_title_show_total_value">Show total value</string>
     <string name="pref_summary_show_total_value">Show total speed beside upload and download speeds</string>
 
-    <string name="pref_summary_hide_notification">Prevent the notification icon from displaying (requires Android 4.1+). This may cause notification to disappear entirely or reduce functionality of other expanded notifications.</string>
+    <string name="pref_summary_hide_notification">Prevent the notification icon from displaying (requires Android 4.1+). This may cause notification to disappear entirely or reduce functionality of other expandable notifications.</string>
     <string name="pref_title_hide_notification">Hide notification icon</string>
 
 

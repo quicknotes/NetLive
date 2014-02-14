@@ -369,16 +369,20 @@ public class MainService extends Service {
     private void update() {
         if (!pm.isScreenOn()) {//TODO a snazier thing might be to do a broadcast receiver that pauses the schedule executor service when screen is off, and renables when screen on.
             updatesMissed+=1;
+            Log.d("netlivebeta", "returned before updating");
             return;          //I don't think cancelling the service all together would be a good idea when screen is off, I don't want to keep calling onCreate when the user turns their screen on
         }
 
+        Log.d("netlivebeta", "preparing update");
         prepareUpdate();
 
         if(notificationEnabled){
             updateNotification();
+            Log.d("netlivebeta", "notifcation updating");
         }
         if(widgetExist){
             updateWidgets();
+            Log.d("netlivebeta", "widget updating");
         }
 
 
@@ -410,13 +414,7 @@ public class MainService extends Service {
         mBuilder.setContentTitle(contentTitleText);
         displayValuesText = "";
 
-
-        //mBuilder.setWhen(System.currentTimeMillis());
         //TODO Report issue to AOSP where if the notification is set to minimum priority, and you update it after having called setWhen(), it will reissue it like a new notification, wont just update it
-
-//        mBuilder.setSmallIcon(R.drawable.idle);
-//        mBuilder.setPriority(Notification.PRIORITY_MIN);//just added these two
-//        mBuilder.setOngoing(true);//just added these two
 
 
         if (!hideNotification) {
