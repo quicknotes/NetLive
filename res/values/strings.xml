@@ -60,7 +60,7 @@
     <string name="pref_measurement_unit_default_value_notification_area">Auto (Kbps, Mbps, Gbps)</string>
     
     <string name="pref_title_active_app">Display active app</string>
-    <string name="pref_summary_active_app">Display the name of the app currently using the most data</string>
+    <string name="pref_summary_active_app">Display the name of the app currently using the most data. Disabling this feature decreases battery usage.</string>
     
     
     <string name="pref_widget_category_general">General Widget Settings</string>

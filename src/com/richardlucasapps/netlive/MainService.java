@@ -239,7 +239,7 @@ public class MainService extends Service {
 
         for (AppDataUsage currentApp : appDataUsageList) {
             delta = currentApp.getRateWithTrafficStatsAPI();
-
+            Log.d("delta", String.valueOf(delta));
             if (delta > maxDelta) {
                 appLabel = currentApp.getAppName();
                 maxDelta = delta;
@@ -495,6 +495,9 @@ public class MainService extends Service {
         for (ApplicationInfo appInfo : appList) {
             String appLabel = (String) packageManager.getApplicationLabel(appInfo);
             int uid = appInfo.uid;
+//            Log.d("appLabel",appLabel);
+//            Log.d("uid",String.valueOf(uid));
+
             AppDataUsage app = new AppDataUsage(appLabel, uid);
             appDataUsageList.add(app);
 
