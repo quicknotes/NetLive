@@ -12,7 +12,6 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -85,9 +84,7 @@ public class MainActivity extends Activity {
             case R.id.action_settings_help:
                 showHelpDialog();
                 return true;
-//            case R.id.action_settings_beer_me:
-//            	showBeerMeDialog();
-//            	return true;
+
             case R.id.action_settings_about:
                 showAboutDialog();
                 return true;
@@ -113,7 +110,7 @@ public class MainActivity extends Activity {
 	private void showAboutDialog() {
 		 AlertDialog.Builder aboutBuilder = new AlertDialog.Builder(this);
 		 TextView myMsg = new TextView(this);
-		 SpannableString s = new SpannableString("NetLive v2.2\n\nrichardlucasapps.com");
+		 SpannableString s = new SpannableString("NetLive v2.4\n\nrichardlucasapps.com");
 		 Linkify.addLinks(s, Linkify.WEB_URLS);
 		 myMsg.setText(s);
 		 myMsg.setTextSize(15);

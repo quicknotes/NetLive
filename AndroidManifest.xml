@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.richardlucasapps.netlive"
-    android:versionCode="18"
-    android:versionName="2.2">
+    android:versionCode="21"
+    android:versionName="2.4">
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -11,7 +11,6 @@
 
 
     <application
-        android:debuggable="false"
         android:name="MyApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"

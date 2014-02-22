@@ -26,13 +26,13 @@
             android:key="pref_key_widget_show_total"
             android:summary="@string/pref_summary_show_total_value"
             android:title="@string/pref_title_show_total_value"
-            android:defaultValue="true" />
+            android:defaultValue="false" />
 
         <CheckBoxPreference
             android:key="pref_key_widget_active_app"
             android:summary="@string/pref_summary_active_app"
             android:title="@string/pref_title_active_app"
-            android:defaultValue="true" />
+            android:defaultValue="false" />
 
     </PreferenceCategory>
 

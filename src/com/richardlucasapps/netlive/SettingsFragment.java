@@ -9,7 +9,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.util.Log;
+
 
 public class SettingsFragment extends PreferenceFragment{
 	

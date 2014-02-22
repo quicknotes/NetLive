@@ -16,6 +16,15 @@ android {
     compileSdkVersion 18
     buildToolsVersion "18.1.1"
 
+    buildTypes {
+        release {
+            runProguard true
+            proguardFile file('../proguard-project.txt')
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+
+        }
+    }
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'

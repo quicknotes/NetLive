@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
+
 
 
 public class NetworkSpeedWidget extends AppWidgetProvider {
@@ -20,7 +20,7 @@ public class NetworkSpeedWidget extends AppWidgetProvider {
 
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
-        Log.d("netlive", "Widget onDelete called");
+
         MyApplication.getInstance().stopService(new Intent(MyApplication.getInstance(), MainService.class));
         MyApplication.getInstance().startService(new Intent(MyApplication.getInstance(), MainService.class));
         super.onDeleted(context, appWidgetIds);
@@ -28,7 +28,7 @@ public class NetworkSpeedWidget extends AppWidgetProvider {
 
     @Override
     public void onEnabled(Context context) {
-        Log.d("netlive", "onEnabled Called");
+
 //        MyApplication.getInstance().stopService(new Intent(MyApplication.getInstance(),MainService.class));
 //        MyApplication.getInstance().startService(new Intent(MyApplication.getInstance(), MainService.class));
         super.onEnabled(context);
@@ -36,7 +36,7 @@ public class NetworkSpeedWidget extends AppWidgetProvider {
 
     @Override
     public void onDisabled(Context context) {
-        Log.d("netlive", "OnDisabled Called");
+
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MyApplication.getInstance());
         SharedPreferences.Editor edit = sharedPref.edit();
         edit.putBoolean("widget_exists",false);

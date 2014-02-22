@@ -24,7 +24,6 @@ import android.preference.PreferenceManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 public class MainService extends Service {
@@ -239,7 +238,6 @@ public class MainService extends Service {
 
         for (AppDataUsage currentApp : appDataUsageList) {
             delta = currentApp.getRateWithTrafficStatsAPI();
-            Log.d("delta", String.valueOf(delta));
             if (delta > maxDelta) {
                 appLabel = currentApp.getAppName();
                 maxDelta = delta;
@@ -369,20 +367,20 @@ public class MainService extends Service {
     private void update() {
         if (!pm.isScreenOn()) {//TODO a snazier thing might be to do a broadcast receiver that pauses the schedule executor service when screen is off, and renables when screen on.
             updatesMissed+=1;
-            Log.d("netlivebeta", "returned before updating");
+
             return;          //I don't think cancelling the service all together would be a good idea when screen is off, I don't want to keep calling onCreate when the user turns their screen on
         }
 
-        Log.d("netlivebeta", "preparing update");
+
         prepareUpdate();
 
         if(notificationEnabled){
             updateNotification();
-            Log.d("netlivebeta", "notifcation updating");
+
         }
         if(widgetExist){
             updateWidgets();
-            Log.d("netlivebeta", "widget updating");
+
         }
 
 
@@ -495,8 +493,7 @@ public class MainService extends Service {
         for (ApplicationInfo appInfo : appList) {
             String appLabel = (String) packageManager.getApplicationLabel(appInfo);
             int uid = appInfo.uid;
-//            Log.d("appLabel",appLabel);
-//            Log.d("uid",String.valueOf(uid));
+
 
             AppDataUsage app = new AppDataUsage(appLabel, uid);
             appDataUsageList.add(app);

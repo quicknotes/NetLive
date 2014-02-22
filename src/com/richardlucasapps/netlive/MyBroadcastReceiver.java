@@ -15,9 +15,9 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         boolean widgetExist = sharedPref.getBoolean("widget_exists", false);
         boolean autoStart = !(sharedPref.getBoolean("pref_key_auto_start", false));
 
-        Log.d("netlive", String.valueOf(widgetExist)+String.valueOf(autoStart));
+
         if(widgetExist || autoStart){
-            Log.d("netlive", String.valueOf(widgetExist)+String.valueOf(autoStart));
+
     		 Intent startServiceIntent = new Intent(context, MainService.class);
     	     context.startService(startServiceIntent);
     	}

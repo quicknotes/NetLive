@@ -1,7 +1,7 @@
 package com.richardlucasapps.netlive;
 
 import android.net.TrafficStats;
-import android.util.Log;
+
 
 import java.io.BufferedReader;
 import java.io.File;
