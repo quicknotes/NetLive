@@ -1,5 +1,7 @@
 I have made NetLive open source for two reasons:
+
 -So people can learn from / use my code.
+
 -So I can learn from YOU. I encourage you to contribute to this project in any way you can.
 
 Possible Area of Focus: My "active app" feature currently uses a lot of CPU cycles. It essenitally must iterate through every app installed on the device and check how much data it has used since the last polling. Any ideas how we can make this more efficient?
@@ -13,7 +15,9 @@ https://plus.google.com/u/0/communities/106451458359352152887
 For questions, feedback, or featur requests feel free to contact me through:
 
 Google+: https://google.com/+RichardLucasapps
+
 Twitter: https://twitter.com/dickclucas
+
 Email: richardlucasapps@gmail.com
 
 The MIT License (MIT)
