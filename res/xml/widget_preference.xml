@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory
-        android:title="Add widget"
-        android:key="pref_key_widget_add_widget_category">
+
         <PreferenceScreen
             android:key="pref_key_widget_add_widget_preference_screen"
             android:title="Add widget" />
-    </PreferenceCategory>
 
 
-    <PreferenceCategory
-        android:title="@string/pref_widget_category_general"
-        android:key="pref_key_widget_category_general">
+
+
         <ListPreference
             android:key="pref_key_widget_measurement_unit"
             android:title="@string/pref_title_measurement_unit"
@@ -34,11 +30,8 @@
             android:title="@string/pref_title_active_app"
             android:defaultValue="false" />
 
-    </PreferenceCategory>
 
-    <PreferenceCategory
-        android:title="@string/pref_widget_category_font"
-        android:key="pref_key_widget_category_font">
+
 
         <ListPreference
             android:key="pref_key_widget_font_size"
@@ -60,7 +53,7 @@
             android:defaultValue="white" />
 
 
-    </PreferenceCategory>
+
 
 
 </PreferenceScreen>

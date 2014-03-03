@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory
-        android:title="@string/notification_drawer_category"
-        android:key="pref_key_notification_drawer_settings">
+
         <ListPreference
             android:key="pref_key_measurement_unit"
             android:title="@string/pref_title_measurement_unit"
@@ -28,12 +26,6 @@
             android:entryValues="@array/pref_poll_rate_values"
             android:defaultValue="5" />
 
-        <!--<CheckBoxPreference-->
-        <!--android:key="pref_key_transfer_rate_names"-->
-        <!--android:summary="@string/pref_summary_transfer_rate_names"-->
-        <!--android:title="@string/pref_title_transfer_rate_names"-->
-        <!--android:defaultValue="true" />-->
-
         <CheckBoxPreference
             android:key="pref_key_active_app"
             android:summary="@string/pref_summary_active_app"
@@ -46,17 +38,17 @@
             android:title="@string/pref_title_hide_notification"
             android:defaultValue="false" />
 
-    </PreferenceCategory>
 
-
-    <PreferenceCategory
-        android:title="@string/general_category"
-        android:key="pref_key_general_settings">
         <CheckBoxPreference
             android:key="pref_key_auto_start"
             android:summary="@string/pref_summary_auto_start"
             android:title="@string/pref_title_auto_start"
             android:defaultValue="false" />
-    </PreferenceCategory>
+
+
+
+
+
+
 
 </PreferenceScreen>

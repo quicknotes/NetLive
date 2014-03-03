@@ -1,7 +1,9 @@
 package com.richardlucasapps.netlive;
 
 
+import android.content.ActivityNotFoundException;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.app.Activity;
@@ -12,13 +14,17 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
+
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import com.richardlucasapps.netlive.R;
+import android.widget.Toast;
+
+
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends Activity {
 
@@ -44,6 +50,64 @@ public class MainActivity extends Activity {
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		
 		boolean firstRun = getSharedPreferences("START_UP_PREFERENCE", MODE_PRIVATE).getBoolean("firstRun", true);
+
+
+        SharedPreferences.Editor edit = sharedPref.edit();
+
+        boolean alreadyPrompted = sharedPref.getBoolean("ALREADY_PROMPTED", false);
+
+        if (!alreadyPrompted) {
+
+            Long date_firstLaunch = sharedPref.getLong("PREF_DATE_FIRST_LAUNCH", 0);
+            if (date_firstLaunch == 0) {
+                date_firstLaunch = System.currentTimeMillis();
+                edit.putLong("PREF_DATE_FIRST_LAUNCH", date_firstLaunch);
+                edit.commit();
+            }
+
+            long days = TimeUnit.MILLISECONDS.toDays(date_firstLaunch - System.currentTimeMillis());
+
+
+            if (days > 7) {
+                edit.putBoolean("ALREADY_PROMPTED", true);
+                edit.commit();
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+                builder.setPositiveButton("Rate NetLive", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        //Try Google play
+                        intent.setData(Uri.parse("market://details?id=com.richardlucasapps.netlive"));
+                        if (MyStartActivity(intent) == false) {
+                            //Market (Google play) app seems not installed, let's try to open a webbrowser
+                            intent.setData(Uri.parse("https://play.google.com/store/apps/details?com.richardlucasapps.netlive"));
+                            if (MyStartActivity(intent) == false) {
+                                //Well if this also fails, we have run out of options, inform the user.
+                            }
+                        }
+
+
+                    }
+                });
+                builder.setMessage("Enjoy NetLive? Please take a moment to rate it.")
+                        .setTitle("Rate NetLive");
+                AlertDialog dialog = builder.create();
+
+                AlertDialog newFragment = dialog;
+                newFragment.show();
+
+            }
+        }
+
+
+
+
+
 
 
 		 if (firstRun){
@@ -81,6 +145,29 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
+            case R.id.action_settings_rate_netlive:
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                //Try Google play
+                intent.setData(Uri.parse("market://details?id=com.richardlucasapps.netlive"));
+                if (MyStartActivity(intent) == false) {
+                    //Market (Google play) app seems not installed, let's try to open a webbrowser
+                    intent.setData(Uri.parse("https://play.google.com/store/apps/details?com.richardlucasapps.netlive"));
+                    if (MyStartActivity(intent) == false) {
+                        //Well if this also fails, we have run out of options, inform the user.
+                        Toast.makeText(this, "Could not open Google Play", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                return true;
+            case R.id.action_settings_share:
+
+                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                sharingIntent.setType("text/plain");
+                String shareBody = "https://play.google.com/store/apps/details?id=com.richardlucasapps.netlive&hl=en";
+                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "NetLive");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+                startActivity(Intent.createChooser(sharingIntent, "Share via"));
+                return true;
+
             case R.id.action_settings_help:
                 showHelpDialog();
                 return true;
@@ -106,11 +193,23 @@ public class MainActivity extends Activity {
     
     }
 
+    private boolean MyStartActivity(Intent aIntent) {
+        try
+        {
+            startActivity(aIntent);
+            return true;
+        }
+        catch (ActivityNotFoundException e)
+        {
+            return false;
+        }
+    }
+
 
 	private void showAboutDialog() {
 		 AlertDialog.Builder aboutBuilder = new AlertDialog.Builder(this);
 		 TextView myMsg = new TextView(this);
-		 SpannableString s = new SpannableString("NetLive v2.4\n\nrichardlucasapps.com");
+		 SpannableString s = new SpannableString("NetLive v2.5\n\nrichardlucasapps.com");
 		 Linkify.addLinks(s, Linkify.WEB_URLS);
 		 myMsg.setText(s);
 		 myMsg.setTextSize(15);

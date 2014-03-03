@@ -113,7 +113,8 @@ public final class R {
         public static final int pref_widget_title_font_color=0x7f070035;
         public static final int pref_widget_title_font_size=0x7f070036;
         public static final int pref_widget_title_font_style=0x7f070037;
-        public static final int welcome=0x7f070038;
+        public static final int show_love_category_name=0x7f070038;
+        public static final int welcome=0x7f070039;
     }
     public static final class style {
         /** 

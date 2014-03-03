@@ -33,7 +33,10 @@
     <string name="pref_summary_auto_start">Prevent all transfer rate reporting in notification area (widgets must be deleted manually)</string>
     <string name="pref_title_auto_start">Disable</string>
    
-    <string name="notification_drawer_category">Notification Drawer (pulldown area)</string>
+    <string name="notification_drawer_category">General</string>
+
+    <string name="show_love_category_name">General</string>
+
     <string name="pref_title_measurement_unit">Unit of measure</string>
     <string name="pref_measurement_unit_summary"></string>
     <string name="pref_dialog_title_choose_measurement_unit">Choose measurement unit</string>
