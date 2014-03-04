@@ -16,19 +16,6 @@ public class AppDataUsage {
 	private int uId;
 	private long previousTotalData;
 
-//    private File uidFileDir;
-//
-//    private File dir;
-//	  private File uidActualFileReceived;
-//	  private File uidActualFileSent;
-//
-//	  private static BufferedReader brReceived;
-//    private static BufferedReader brSent;
-////    private static String textReceived;
-////	private static String textSent;
-////	private static String receivedLine;
-////    private static String sentLine;
-
     private static final String uidStatPath = "/proc/uid_stat/";
     private static final String uidRcv = "tcp_rcv";
     private static final String uidSnd = "tcp_snd";
@@ -38,19 +25,6 @@ public class AppDataUsage {
 		this.appName = appName1;
 		this.uId = uid1;
 		this.previousTotalData = getTotalBytesManual();
-
-//        this.dir = new File(uidStatPath);
-//        this.uidFileDir = new File(uidStatPath+String.valueOf(this.uId));
-//        this.uidActualFileReceived = new File(uidFileDir,uidRcv);
-//        this.uidActualFileSent = new File(uidFileDir,uidSnd);
-//
-//        try{
-//        brReceived = new BufferedReader(new FileReader(uidActualFileReceived));
-//        brSent = new BufferedReader(new FileReader(uidActualFileSent));
-//
-//        }catch(Exception e){
-//
-//        }
 
 	}
 
@@ -83,21 +57,21 @@ public class AppDataUsage {
             textReceived         = brReceived.readLine();
             textSent             = brSent.readLine();
         }catch(FileNotFoundException e){
-
+            //silently fail
         }catch(IOException e){
-
+            //silently fail
         }
-        return Long.valueOf(textReceived).longValue() + Long.valueOf(textSent).longValue();
+        return Long.valueOf(textReceived) + Long.valueOf(textSent);
 
     }
 
-   public Long getStatsWithAPI(){
-        return Long.valueOf(TrafficStats.getUidRxBytes(this.uId)) + Long.valueOf(TrafficStats.getUidTxBytes(this.uId));
+   public Long getStatsWithTrafficStatsAPI(){
+        return TrafficStats.getUidRxBytes(this.uId) + TrafficStats.getUidTxBytes(this.uId);
 
     }
 
     public Long getRateWithTrafficStatsAPI(){
-		long currentTotalData = getStatsWithAPI();
+		long currentTotalData = getStatsWithTrafficStatsAPI();
 		long rate = currentTotalData - previousTotalData;
 		previousTotalData = currentTotalData;
 		return rate;
